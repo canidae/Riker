@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN" "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+
+<!-- Checker modules -->
+<module name="Checker">
+	<!-- Default severity -->
+	<property name="severity" value="error"/>
+
+	<!-- Javadoc Comments -->
+	<module name="JavadocPackage" />
+
+	<!-- Miscellaneous -->
+	<module name="NewlineAtEndOfFile" />
+	<module name="Translation" />
+
+	<!-- TreeWalker modules -->
+	<module name="TreeWalker">
+		<!-- Annotations -->
+		<module name="AnnotationUseStyle" />
+		<module name="MissingDeprecated" />
+		<module name="MissingOverride" />
+		<module name="PackageAnnotation" />
+
+		<!-- Block Checks -->
+		<module name="EmptyBlock" />
+		<module name="LeftCurly" />
+		<module name="RightCurly" />
+		<module name="AvoidNestedBlocks" />
+
+		<!-- Class Design -->
+		<module name="VisibilityModifier" />
+		<module name="FinalClass" />
+		<module name="InterfaceIsType" />
+		<module name="HideUtilityClassConstructor" />
+		<module name="MutableException" />
+
+		<!-- Coding -->
+		<module name="CovariantEquals" />
+		<module name="DoubleCheckedLocking" />
+		<module name="EmptyStatement" />
+		<module name="EqualsAvoidNull" />
+		<module name="EqualsHashCode" />
+		<module name="MissingSwitchDefault" />
+		<module name="RedundantThrows" />
+		<module name="SimplifyBooleanExpression" />
+		<module name="SimplifyBooleanReturn" />
+		<module name="StringLiteralEquality" />
+		<module name="NoClone" />
+		<module name="NoFinalizer" />
+		<module name="PackageDeclaration" />
+		<module name="DeclarationOrder" />
+		<module name="ExplicitInitialization" />
+		<module name="DefaultComesLast" />
+		<module name="MultipleVariableDeclarations" />
+		<module name="UnnecessaryParentheses" />
+
+		<!-- Imports -->
+		<module name="AvoidStarImport" />
+		<module name="AvoidStaticImport" />
+		<module name="IllegalImport" />
+		<module name="RedundantImport" />
+		<module name="UnusedImports" />
+		<module name="ImportOrder" />
+
+		<!-- Javadoc Comments -->
+		<module name="JavadocType" />
+		<module name="JavadocMethod" />
+		<module name="JavadocVariable" />
+		<module name="JavadocStyle" />
+
+		<!-- Miscellaneous -->
+		<module name="TodoComment" />
+		<module name="UpperEll" />
+		<module name="ArrayTypeStyle" />
+		<module name="TrailingComment" />
+
+		<!-- Modifiers -->
+		<module name="ModifierOrder" />
+		<module name="RedundantModifier" />
+
+		<!-- Naming Conventions -->
+		<module name="AbstractClassName" />
+		<module name="ClassTypeParameterName" />
+		<module name="ConstantName" />
+		<module name="LocalFinalVariableName" />
+		<module name="LocalVariableName" />
+		<module name="MemberName" />
+		<module name="MethodName" />
+		<module name="MethodTypeParameterName" />
+		<module name="PackageName" />
+		<module name="ParameterName" />
+		<module name="StaticVariableName" />
+		<module name="TypeName" />
+
+		<!-- Whitespace -->
+		<module name="GenericWhitespace" />
+		<module name="NoWhitespaceAfter" />
+		<module name="NoWhitespaceBefore" />
+		<module name="ParenPad" />
+		<module name="TypecastParenPad" />
+		<module name="WhitespaceAfter" />
+		<module name="WhitespaceAround" />
+	</module>
+</module>
