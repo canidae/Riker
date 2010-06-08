@@ -79,7 +79,6 @@
 		<module name="RedundantModifier" />
 
 		<!-- Naming Conventions -->
-		<module name="AbstractClassName" />
 		<module name="ClassTypeParameterName" />
 		<module name="ConstantName" />
 		<module name="LocalFinalVariableName" />

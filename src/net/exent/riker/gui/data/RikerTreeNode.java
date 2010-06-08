@@ -23,7 +23,96 @@
  */
 package net.exent.riker.gui.data;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 
-public interface RikerTreeNode extends MutableTreeNode {
+/**
+ * Interface for a node in our tree.
+ */
+public abstract class RikerTreeNode implements MutableTreeNode {
+	/**
+	 * Parent of this node.
+	 */
+	private MutableTreeNode parent;
+	/**
+	 * Children of this node.
+	 */
+	private List<MutableTreeNode> children = new ArrayList<MutableTreeNode>();
+	/**
+	 * The user object associated with this node.
+	 */
+	private Object userObject;
+
+	@Override
+	public void insert(MutableTreeNode child, int index) {
+		children.add(index, child);
+	}
+
+	@Override
+	public void remove(int index) {
+		children.remove(index);
+	}
+
+	@Override
+	public void remove(MutableTreeNode child) {
+		children.remove(child);
+	}
+
+	@Override
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
+	@Override
+	public void removeFromParent() {
+		if (parent != null)
+			parent.remove(this);
+	}
+
+	@Override
+	public void setParent(MutableTreeNode parent) {
+		this.parent = parent;
+	}
+
+	@Override
+	public TreeNode getChildAt(int index) {
+		return children.get(index);
+	}
+
+	@Override
+	public int getChildCount() {
+		return children.size();
+	}
+
+	@Override
+	public TreeNode getParent() {
+		return parent;
+	}
+
+	@Override
+	public int getIndex(TreeNode child) {
+		return children.indexOf(child);
+	}
+
+	@Override
+	public boolean isLeaf() {
+		return children.size() == 0;
+	}
+
+	@Override
+	public Enumeration children() {
+		return Collections.enumeration(children);
+	}
+
+	/**
+	 * Get the user Object associated with this node.
+	 * @return the user object associated with this node
+	 */
+	public Object getUserObject() {
+		return userObject;
+	}
 }

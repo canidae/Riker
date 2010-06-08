@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.exent.riker.metadata.MetaFile;
 import net.exent.riker.metadata.Track;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -60,9 +61,10 @@ public final class FileHandler implements Runnable {
 	/**
 	 * A map of files to save and the metadata it should be saved with.
 	 */
-	private Map<AudioFile, Track> saveQueue = Collections.synchronizedMap(new HashMap<AudioFile, Track>());
+	private Map<MetaFile, Track> saveQueue = Collections.synchronizedMap(new HashMap<MetaFile, Track>());
 	/**
 	 * A map of loaded files.
+	 * TODO: get rid off
 	 */
 	private Map<String, AudioFile> files = Collections.synchronizedMap(new HashMap<String, AudioFile>());
 	/**
@@ -90,7 +92,7 @@ public final class FileHandler implements Runnable {
 	 * @param file the file to be saved
 	 * @param track track metadata to be stored in this file
 	 */
-	public static void save(AudioFile file, Track track) {
+	public static void save(MetaFile file, Track track) {
 		handler.saveQueue.put(file, track);
 		handler.wake();
 	}
@@ -128,13 +130,13 @@ public final class FileHandler implements Runnable {
 					for (File f : file.listFiles())
 						loadQueue.add(f.getAbsolutePath());
 				} else if (file.isFile()) {
-					/* try to read the file as an AudioFile */
+					/* try to read the file as an MetaFile */
 					if (files.containsKey(path)) {
 						LOG.info("Skipping loading a file as it's already loaded: " + path);
 					} else {
 						try {
-							AudioFile audioFile = AudioFileIO.read(file);
-							files.put(path, audioFile);
+							MetaFile metaFile = new MetaFile(AudioFileIO.read(file));
+							files.put(path, metaFile);
 							matchFiles = true;
 						} catch (CannotReadException e) {
 							LOG.notice(e, "Unable to open file: " + path);

@@ -32,6 +32,35 @@ import org.jaudiotagger.tag.FieldKey;
  */
 public class MetaFile extends AudioFile {
 	/**
+	 * The track this MetaFile match.
+	 */
+	private Track track;
+
+	/**
+	 * Default constructor.
+	 * @param audioFile the AudioFile this MetaFile will extend
+	 */
+	public MetaFile(AudioFile audioFile) {
+		super(audioFile.getFile(), audioFile.getAudioHeader(), audioFile.getTag());
+	}
+
+	/**
+	 * Get the track this MetaFile match.
+	 * @return the track this MetaFile match
+	 */
+	public Track track() {
+		return track;
+	}
+
+	/**
+	 * Set the track this MetaFile match.
+	 * @param track the track this MetaFile match
+	 */
+	public void track(Track track) {
+		this.track = track;
+	}
+
+	/**
 	 * Get default group name of this file.
 	 * @return group name of file
 	 */
