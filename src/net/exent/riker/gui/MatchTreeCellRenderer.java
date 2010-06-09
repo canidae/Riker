@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package net.exent.riker.gui.data;
+package net.exent.riker.gui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -30,15 +30,22 @@ import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
+import net.exent.riker.metadata.Album;
+import net.exent.riker.metadata.Group;
+import net.exent.riker.metadata.MetaFile;
+import net.exent.riker.metadata.Track;
 
-public class RikerTreeCellRenderer implements TreeCellRenderer {
+public class MatchTreeCellRenderer implements TreeCellRenderer {
 	@Override
-	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+	public Component getTreeCellRendererComponent(JTree tree, Object node, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+		return null;
+		/*
 		String icon = "unknown_icon.png";
-		Object node = ((RikerTreeNode) value).getUserObject();
-		int status = Metafile.NONE;
-		if (node instanceof Album) {
-			Album album = (Album) node;
+		Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
+		int status = MetaFile.NONE;
+		if (userObject instanceof Group) {
+		} else if (userObject instanceof Album) {
+			Album album = (Album) userObject;
 			if (album.getMinScore() < 0.4)
 				icon = "album_25.png";
 			else if (album.getMinScore() < 0.55)
@@ -49,8 +56,8 @@ public class RikerTreeCellRenderer implements TreeCellRenderer {
 				icon = "album_70.png";
 			else
 				icon = "album_85.png";
-		} else if (node instanceof Track) {
-			Track track = (Track) node;
+		} else if (userObject instanceof Track) {
+			Track track = (Track) userObject;
 			if (track.hasGotMatch())
 				icon = "track_matched.png";
 			else if (!track.hasGotFiles())
@@ -65,8 +72,8 @@ public class RikerTreeCellRenderer implements TreeCellRenderer {
 				icon = "track_70.png";
 			else
 				icon = "track_85.png";
-		} else if (node instanceof Metafile) {
-			Metafile file = (Metafile) node;
+		} else if (userObject instanceof MetaFile) {
+			MetaFile file = (MetaFile) userObject;
 			if (file.getTrackID() > 0)
 				icon = "file_matched.png";
 			else if (file.getScore() < 0.4)
@@ -81,19 +88,20 @@ public class RikerTreeCellRenderer implements TreeCellRenderer {
 				icon = "file_85.png";
 			status = file.getStatus();
 		}
-		JLabel label = new JLabel(value.toString(), new ImageIcon(getClass().getResource("/net/exent/riker/gui/icons/" + icon)), JLabel.LEFT);
+		JLabel label = new JLabel(node.toString(), new ImageIcon(getClass().getResource("/net/exent/riker/gui/icons/" + icon)), JLabel.LEFT);
 		label.setOpaque(true);
 		if (selected) {
 			label.setBackground(new Color(200, 200, 255));
 		} else {
 			label.setBackground(new Color(255, 255, 255));
 		}
-		if (status == Metafile.SAVE)
+		if (status == MetaFile.SAVE)
 			label.setForeground(new Color(0, 150, 0));
-		else if (status == Metafile.DELETE)
+		else if (status == MetaFile.DELETE)
 			label.setForeground(new Color(150, 0, 0));
-		else if (status == Metafile.SAVE_METADATA)
+		else if (status == MetaFile.SAVE_METADATA)
 			label.setForeground(new Color(150, 0, 150));
 		return label;
+		*/
 	}
 }

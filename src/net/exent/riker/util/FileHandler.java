@@ -30,16 +30,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.exent.riker.gui.Riker;
 import net.exent.riker.metadata.MetaFile;
 import net.exent.riker.metadata.Track;
-import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.AudioHeader;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
-import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
 
 /**
@@ -63,11 +60,6 @@ public final class FileHandler implements Runnable {
 	 */
 	private Map<MetaFile, Track> saveQueue = Collections.synchronizedMap(new HashMap<MetaFile, Track>());
 	/**
-	 * A map of loaded files.
-	 * TODO: get rid off
-	 */
-	private Map<String, AudioFile> files = Collections.synchronizedMap(new HashMap<String, AudioFile>());
-	/**
 	 * Whether the thread is active.
 	 */
 	private boolean active;
@@ -83,6 +75,7 @@ public final class FileHandler implements Runnable {
 	 * @param path the directory/file to add to the load queue
 	 */
 	public static void load(String path) {
+		LOG.info("Path added: " + path);
 		handler.loadQueue.add(path);
 		handler.wake();
 	}
@@ -100,28 +93,31 @@ public final class FileHandler implements Runnable {
 	/**
 	 * Start the thread.
 	 */
-	public static void start() {
+	public synchronized static void start() {
 		if (!handler.active) {
+			LOG.info("Starting");
 			handler.active = true;
-			new Thread(handler).run();
+			new Thread(handler).start();
 		}
 	}
 
 	/**
 	 * Stop the thread.
 	 */
-	public static void stop() {
-		handler.active = false;
-		handler.wake();
+	public synchronized static void stop() {
+		if (handler.active) {
+			LOG.info("Stopping");
+			handler.active = false;
+			handler.wake();
+		}
 	}
 
 	/**
 	 * Load and save files.
 	 */
 	@Override
-	public synchronized void run() {
+	public void run() {
 		while (active) {
-			boolean matchFiles = false;
 			while (active && loadQueue.size() > 0) {
 				String path = loadQueue.remove(0);
 				File file = new File(path);
@@ -131,61 +127,31 @@ public final class FileHandler implements Runnable {
 						loadQueue.add(f.getAbsolutePath());
 				} else if (file.isFile()) {
 					/* try to read the file as an MetaFile */
+					/*
 					if (files.containsKey(path)) {
-						LOG.info("Skipping loading a file as it's already loaded: " + path);
+					LOG.info("Skipping loading a file as it's already loaded: " + path);
 					} else {
-						try {
-							MetaFile metaFile = new MetaFile(AudioFileIO.read(file));
-							files.put(path, metaFile);
-							matchFiles = true;
-						} catch (CannotReadException e) {
-							LOG.notice(e, "Unable to open file: " + path);
-						} catch (IOException e) {
-							LOG.notice(e, "Failed reading file: " + path);
-						} catch (TagException e) {
-							LOG.notice(e, "Unable to read tag from file: " + path);
-						} catch (ReadOnlyFileException e) {
-							LOG.notice(e, "Unable to open readonly file: " + path);
-						} catch (InvalidAudioFrameException e) {
-							LOG.notice(e, "Unable to parse audio frame in file: " + path);
-						}
+					 */
+					try {
+						MetaFile metaFile = new MetaFile(AudioFileIO.read(file));
+						Riker.addFile(metaFile);
+					} catch (CannotReadException e) {
+						LOG.notice(e, "Unable to open file: " + path);
+					} catch (IOException e) {
+						LOG.notice(e, "Failed reading file: " + path);
+					} catch (TagException e) {
+						LOG.notice(e, "Unable to read tag from file: " + path);
+					} catch (ReadOnlyFileException e) {
+						LOG.notice(e, "Unable to open readonly file: " + path);
+					} catch (InvalidAudioFrameException e) {
+						LOG.notice(e, "Unable to parse audio frame in file: " + path);
 					}
+					/*
+					}
+					 */
 				} else {
 					LOG.notice("Hmm, an entry in the load queue that is neither a directory nor a file? " + path);
 				}
-			}
-			if (matchFiles) {
-				/* all files read, start matching.
-				 * note that matching will start immediately when reading is done,
-				 * if user adds more directories/files later,
-				 * then all the files will run through the Matcher again.
-				 */
-				/* TODO: call Riker.filesLoaded() or something, let that class do this instead */
-				/* create groups based on album mbid/album title/directory path, audio format, samplerate and channels */
-				Map<String, List<AudioFile>> groups = new HashMap<String, List<AudioFile>>();
-				for (Map.Entry<String, AudioFile> file : files.entrySet()) {
-					String path = file.getKey();
-					AudioFile audioFile = file.getValue();
-					AudioHeader header = audioFile.getAudioHeader();
-					Tag tag = audioFile.getTag();
-					String group = tag.getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
-					if (group == null || "".equals(group))
-						group = tag.getFirst(FieldKey.ALBUM);
-					if (group == null || "".equals(group))
-						group = path.substring(0, path.lastIndexOf(File.separatorChar));
-					if (group == null)
-						group = "<none>";
-					group = group + " (" + header.getFormat() + ", " + header.getSampleRate() + ", " + header.getChannels() + ")";
-
-					if (groups.containsKey(group)) {
-						groups.get(group).add(audioFile);
-					} else {
-						List<AudioFile> audioFiles = new ArrayList<AudioFile>();
-						audioFiles.add(audioFile);
-						groups.put(group, audioFiles);
-					}
-				}
-				/* feed groups to matchers */
 			}
 			while (active && saveQueue.size() > 0) {
 			}

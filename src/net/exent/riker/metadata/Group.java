@@ -23,15 +23,11 @@
  */
 package net.exent.riker.metadata;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jaudiotagger.audio.AudioHeader;
-import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.Tag;
 
 /**
  * A group is a collection of files that we believe come from the same album.
@@ -43,6 +39,10 @@ public class Group {
 	 */
 	private static Map<String, Group> groups = new HashMap<String, Group>();
 	/**
+	 * Name of current group.
+	 */
+	private String groupName;
+	/**
 	 * List of files in a group.
 	 */
 	private List<MetaFile> files = new ArrayList<MetaFile>();
@@ -51,7 +51,8 @@ public class Group {
 	 * Private constructor to prevent external instantiation.
 	 * @param file first file to be added to the group
 	 */
-	protected Group(MetaFile file) {
+	protected Group(String groupName, MetaFile file) {
+		this.groupName = groupName;
 		files.add(file);
 	}
 
@@ -63,16 +64,26 @@ public class Group {
 		return Collections.unmodifiableList(files);
 	}
 
+	@Override
+	public String toString() {
+		return groupName;
+	}
+
 	/**
 	 * Add a file to the group it belongs to.
 	 * @param groupName the group this file should be placed in
 	 * @param file the file to be added
+	 * @return the group the file was placed in
 	 */
-	public static void addFile(String groupName, MetaFile file) {
-		if (groups.containsKey(groupName))
-			groups.get(groupName).files.add(file);
-		else
-			groups.put(groupName, new Group(file));
+	public static Group addFile(String groupName, MetaFile file) {
+		if (groups.containsKey(groupName)) {
+			Group group = groups.get(groupName);
+			group.files.add(file);
+			return group;
+		}
+		Group group = new Group(groupName, file);
+		groups.put(groupName, group);
+		return group;
 	}
 
 	/**
