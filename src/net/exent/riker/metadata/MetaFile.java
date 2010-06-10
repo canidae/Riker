@@ -32,39 +32,59 @@ import org.jaudiotagger.tag.FieldKey;
  */
 public class MetaFile extends AudioFile {
 	/**
-	 * The track this MetaFile match.
+	 * The group this metafile belongs to.
+	 */
+	private Group group;
+	/**
+	 * The track this metafile match.
 	 */
 	private Track track;
 
 	/**
 	 * Default constructor.
-	 * @param audioFile the AudioFile this MetaFile will extend
+	 * @param audioFile the audiofile this metafile will extend
 	 */
 	public MetaFile(AudioFile audioFile) {
 		super(audioFile.getFile(), audioFile.getAudioHeader(), audioFile.getTag());
 	}
 
 	/**
-	 * Get the track this MetaFile match.
-	 * @return the track this MetaFile match
+	 * Get the group this metafile belongs to.
+	 * @return the group this metafile belongs to
+	 */
+	public Group group() {
+		return group;
+	}
+
+	/**
+	 * Set the group this metafile belongs to.
+	 * @param group the group this metafile belongs to
+	 */
+	public void group(Group group) {
+		this.group = group;
+	}
+
+	/**
+	 * Get the track this metafile match.
+	 * @return the track this metafile match
 	 */
 	public Track track() {
 		return track;
 	}
 
 	/**
-	 * Set the track this MetaFile match.
-	 * @param track the track this MetaFile match
+	 * Set the track this metafile match.
+	 * @param track the track this metafile match
 	 */
 	public void track(Track track) {
 		this.track = track;
 	}
 
 	/**
-	 * Get default group name of this file.
+	 * Create group name from metadata in file.
 	 * @return group name of file
 	 */
-	public String groupName() {
+	public String createGroupName() {
 		String groupName = getTag().getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
 		if (groupName == null || "".equals(groupName))
 			groupName = getTag().getFirst(FieldKey.ALBUM);
@@ -75,5 +95,18 @@ public class MetaFile extends AudioFile {
 		if (groupName == null)
 			groupName = "<none>";
 		return groupName + " (" + getAudioHeader().getFormat() + ", " + getAudioHeader().getSampleRate() + ", " + getAudioHeader().getChannels() + ")";
+	}
+
+	/**
+	 * Get the file name of this metafile.
+	 * @return file name of metafile
+	 */
+	public String fileName() {
+		return getFile().getAbsolutePath();
+	}
+
+	@Override
+	public String toString() {
+		return fileName();
 	}
 }

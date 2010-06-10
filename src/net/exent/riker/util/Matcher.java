@@ -24,7 +24,7 @@
 package net.exent.riker.util;
 
 import java.util.List;
-import org.jaudiotagger.audio.AudioFile;
+import net.exent.riker.metadata.MetaFile;
 
 /**
  * Class for matching metadata from a group of files with metadata from MusicBrainz.
@@ -37,13 +37,13 @@ public class Matcher implements Runnable {
 	/**
 	 * List of files to compare with data from MusicBrainz.
 	 */
-	private List<AudioFile> files;
+	private List<MetaFile> files;
 
 	/**
 	 * Default constructor.
 	 * @param files the files we wish to compare against data from Musicbrainz.
 	 */
-	public Matcher(List<AudioFile> files) {
+	public Matcher(List<MetaFile> files) {
 		this.files = files;
 		new Thread(this).run();
 	}
@@ -53,7 +53,7 @@ public class Matcher implements Runnable {
 	 */
 	@Override
 	public void run() {
-		for (AudioFile file : files) {
+		for (MetaFile file : files) {
 		}
 	}
 

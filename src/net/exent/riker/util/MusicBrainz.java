@@ -24,19 +24,13 @@
 package net.exent.riker.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.exent.riker.metadata.Album;
 
 /**
  * Class for searching MusicBrainz.
  */
 public final class MusicBrainz {
-	/**
-	 * Cache of loaded albums.
-	 */
-	private static Map<String, Album> albums = new HashMap<String, Album>();
 	/**
 	 * The last time we sent a request to MusicBrainz.
 	 * We may only send a request once per second.
@@ -51,13 +45,10 @@ public final class MusicBrainz {
 
 	/**
 	 * Loan an album from MusicBrainz with the given MBID.
-	 * Albums will be cached to improve performance.
 	 * @param mbid the MBID of the album.
 	 * @return the album if found.
 	 */
 	public static synchronized Album loadAlbum(String mbid) {
-		if (albums.containsKey(mbid))
-			return albums.get(mbid);
 		delay();
 		return null;
 	}
@@ -69,8 +60,8 @@ public final class MusicBrainz {
 	 * @return a list of albums containing matching tracks
 	 */
 	public static synchronized List<Album> searchTrack(String query) {
-		List<Album> trackAlbums = new ArrayList<Album>();
 		delay();
+		List<Album> trackAlbums = new ArrayList<Album>();
 		return trackAlbums;
 	}
 

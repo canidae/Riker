@@ -25,40 +25,65 @@ package net.exent.riker.metadata;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A group is a collection of files that we believe come from the same album.
- * This class keeps track of all groups and files connected to the groups.
  */
 public class Group {
 	/**
-	 * Map of all groups.
-	 */
-	private static Map<String, Group> groups = new HashMap<String, Group>();
-	/**
 	 * Name of current group.
 	 */
-	private String groupName;
+	private String name;
 	/**
-	 * List of files in a group.
+	 * List of files in group.
 	 */
 	private List<MetaFile> files = new ArrayList<MetaFile>();
 
 	/**
-	 * Private constructor to prevent external instantiation.
-	 * @param file first file to be added to the group
+	 * Default constructor.
+	 * @param name the name of the group
 	 */
-	protected Group(String groupName, MetaFile file) {
-		this.groupName = groupName;
-		files.add(file);
+	public Group(String name) {
+		this.name = name;
 	}
 
 	/**
-	 * Get all files in this group as an unmodifiable List.
-	 * @return an unmodifiable list of files in this group
+	 * Get the name of the group.
+	 * @return the name of the group
+	 */
+	public String name() {
+		return name;
+	}
+
+	/**
+	 * Set the name of the group.
+	 * @param name the name of the group.
+	 */
+	public void name(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * Add a file to group, if file already is in the group then nothing happens.
+	 * @param file file to be added to group
+	 */
+	public void addFile(MetaFile file) {
+		if (!files.contains(file))
+			files.add(file);
+	}
+
+	/**
+	 * Remove a file from group, if file isn't in group then nothing happens.
+	 * @param file file to be removed from group
+	 */
+	public void removeFile(MetaFile file) {
+		files.remove(file);
+	}
+
+	/**
+	 * Get the files in the group, returned list is unmodifiable.
+	 * @return the files in the group
 	 */
 	public List<MetaFile> files() {
 		return Collections.unmodifiableList(files);
@@ -66,31 +91,6 @@ public class Group {
 
 	@Override
 	public String toString() {
-		return groupName;
-	}
-
-	/**
-	 * Add a file to the group it belongs to.
-	 * @param groupName the group this file should be placed in
-	 * @param file the file to be added
-	 * @return the group the file was placed in
-	 */
-	public static Group addFile(String groupName, MetaFile file) {
-		if (groups.containsKey(groupName)) {
-			Group group = groups.get(groupName);
-			group.files.add(file);
-			return group;
-		}
-		Group group = new Group(groupName, file);
-		groups.put(groupName, group);
-		return group;
-	}
-
-	/**
-	 * Get all groups as an unmodifiable Map.
-	 * @return an unmodifiable map of all groups
-	 */
-	public static Map<String, Group> groups() {
-		return Collections.unmodifiableMap(groups);
+		return name;
 	}
 }
