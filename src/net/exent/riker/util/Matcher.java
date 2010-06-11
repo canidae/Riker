@@ -24,6 +24,7 @@
 package net.exent.riker.util;
 
 import java.util.List;
+import net.exent.riker.gui.Riker;
 import net.exent.riker.metadata.MetaFile;
 
 /**
@@ -55,6 +56,7 @@ public class Matcher implements Runnable {
 	public void run() {
 		for (MetaFile file : files) {
 		}
+		Riker.filesMatched(files);
 	}
 
 	/**

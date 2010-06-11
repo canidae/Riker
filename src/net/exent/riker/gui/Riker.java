@@ -26,6 +26,7 @@ package net.exent.riker.gui;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -133,6 +134,12 @@ public class Riker extends JFrame {
 	 */
 	public static void filesLoaded() {
 		/* TODO: start up matchers for each group */
+	}
+
+	/**
+	 * Called by Matchers when they're done matching files.
+	 */
+	public static void filesMatched(List<MetaFile> files) {
 	}
 
 	/** This method is called from within the constructor to
