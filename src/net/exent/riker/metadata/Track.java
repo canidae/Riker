@@ -23,10 +23,18 @@
  */
 package net.exent.riker.metadata;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Data class containing track information.
  */
 public class Track {
+	/**
+	 * Map of all known tracks.
+	 */
+	private static Map<String, Track> tracks = Collections.synchronizedMap(new HashMap<String, Track>());
 	/**
 	 * Album track can be found on.
 	 */
@@ -68,6 +76,15 @@ public class Track {
 		this.mbid = mbid;
 		this.tracknumber = tracknumber;
 		this.duration = duration;
+		tracks.put(mbid, this);
+	}
+
+	/**
+	 * Get map of all known tracks.
+	 * @return map of all known tracks
+	 */
+	public static Map<String, Track> tracks() {
+		return Collections.unmodifiableMap(tracks);
 	}
 
 	/**

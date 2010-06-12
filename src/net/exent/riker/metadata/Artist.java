@@ -23,10 +23,18 @@
  */
 package net.exent.riker.metadata;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Data class containing artist information.
  */
 public class Artist {
+	/**
+	 * Map of all known artists.
+	 */
+	private static Map<String, Artist> artists = Collections.synchronizedMap(new HashMap<String, Artist>());
 	/**
 	 * Artist name.
 	 */
@@ -50,6 +58,15 @@ public class Artist {
 		this.name = name;
 		this.sortname = sortname;
 		this.mbid = mbid;
+		artists.put(mbid, this);
+	}
+
+	/**
+	 * Get map of all known artists.
+	 * @return map of all known artists
+	 */
+	public static Map<String, Artist> artists() {
+		return Collections.unmodifiableMap(artists);
 	}
 
 	/**

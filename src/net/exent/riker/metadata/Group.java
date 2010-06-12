@@ -25,12 +25,18 @@ package net.exent.riker.metadata;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A group is a collection of files that we believe come from the same album.
  */
 public class Group {
+	/**
+	 * Map of all groups.
+	 */
+	private static Map<String, Group> groups = Collections.synchronizedMap(new HashMap<String, Group>());
 	/**
 	 * Name of current group.
 	 */
@@ -38,7 +44,7 @@ public class Group {
 	/**
 	 * List of files in group.
 	 */
-	private List<MetaFile> files = new ArrayList<MetaFile>();
+	private List<Metafile> files = new ArrayList<Metafile>();
 
 	/**
 	 * Default constructor.
@@ -46,6 +52,15 @@ public class Group {
 	 */
 	public Group(String name) {
 		this.name = name;
+		groups.put(name, this);
+	}
+
+	/**
+	 * Get map of all groups.
+	 * @return map of all groups
+	 */
+	public static Map<String, Group> groups() {
+		return Collections.unmodifiableMap(groups);
 	}
 
 	/**
@@ -68,7 +83,7 @@ public class Group {
 	 * Add a file to group, if file already is in the group then nothing happens.
 	 * @param file file to be added to group
 	 */
-	public void addFile(MetaFile file) {
+	public void addFile(Metafile file) {
 		if (!files.contains(file))
 			files.add(file);
 	}
@@ -77,7 +92,7 @@ public class Group {
 	 * Remove a file from group, if file isn't in group then nothing happens.
 	 * @param file file to be removed from group
 	 */
-	public void removeFile(MetaFile file) {
+	public void removeFile(Metafile file) {
 		files.remove(file);
 	}
 
@@ -85,7 +100,7 @@ public class Group {
 	 * Get the files in the group, returned list is unmodifiable.
 	 * @return the files in the group
 	 */
-	public List<MetaFile> files() {
+	public List<Metafile> files() {
 		return Collections.unmodifiableList(files);
 	}
 

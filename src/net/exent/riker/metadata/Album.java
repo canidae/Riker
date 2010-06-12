@@ -23,12 +23,19 @@
  */
 package net.exent.riker.metadata;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data class containing album information.
  */
 public class Album {
+	/**
+	 * Map of all known albums.
+	 */
+	private static Map<String, Album> albums = Collections.synchronizedMap(new HashMap<String, Album>());
 	/**
 	 * Artist of the album.
 	 */
@@ -70,6 +77,15 @@ public class Album {
 		this.type = type;
 		this.mbid = mbid;
 		this.tracks = tracks;
+		albums.put(mbid, this);
+	}
+
+	/**
+	 * Get map of all known albums.
+	 * @return map of all known albums
+	 */
+	public static Map<String, Album> albums() {
+		return Collections.unmodifiableMap(albums);
 	}
 
 	/**

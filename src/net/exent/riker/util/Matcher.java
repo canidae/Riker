@@ -23,9 +23,12 @@
  */
 package net.exent.riker.util;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.exent.riker.gui.Riker;
-import net.exent.riker.metadata.MetaFile;
+import net.exent.riker.metadata.Metafile;
+import net.exent.riker.metadata.Track;
 
 /**
  * Class for matching metadata from a group of files with metadata from MusicBrainz.
@@ -38,13 +41,13 @@ public class Matcher implements Runnable {
 	/**
 	 * List of files to compare with data from MusicBrainz.
 	 */
-	private List<MetaFile> files;
+	private List<Metafile> files;
 
 	/**
 	 * Default constructor.
 	 * @param files the files we wish to compare against data from Musicbrainz.
 	 */
-	public Matcher(List<MetaFile> files) {
+	public Matcher(List<Metafile> files) {
 		this.files = files;
 		new Thread(this).run();
 	}
@@ -54,7 +57,14 @@ public class Matcher implements Runnable {
 	 */
 	@Override
 	public void run() {
-		for (MetaFile file : files) {
+		Map<Track, Map<Metafile, Double>> comparison = new HashMap<Track, Map<Metafile, Double>>();
+		List<Metafile> queue = files.subList(0, files.size());
+		while (!queue.isEmpty()) {
+			Metafile file = queue.remove(0);
+			/* if we got album mbid, look that up first */
+			/* if not, search track */
+			/* load albums from track search */
+			/* compare files with album and remove good matches from queue */
 		}
 		Riker.filesMatched(files);
 	}

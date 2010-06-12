@@ -32,7 +32,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 import net.exent.riker.metadata.Album;
 import net.exent.riker.metadata.Group;
-import net.exent.riker.metadata.MetaFile;
+import net.exent.riker.metadata.Metafile;
 import net.exent.riker.metadata.Track;
 
 public class MatchTreeCellRenderer implements TreeCellRenderer {

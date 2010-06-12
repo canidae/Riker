@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import net.exent.riker.gui.Riker;
+import net.exent.riker.metadata.Metafile;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 
@@ -50,7 +51,7 @@ public final class FileHandler implements Runnable {
 	/**
 	 * A map of files to save and the metadata it should be saved with.
 	 */
-	private static List<AudioFile> saveQueue = Collections.synchronizedList(new ArrayList<AudioFile>());
+	private static List<Metafile> saveQueue = Collections.synchronizedList(new ArrayList<Metafile>());
 	/**
 	 * Whether the thread is active.
 	 */
@@ -76,7 +77,7 @@ public final class FileHandler implements Runnable {
 	 * Add a file to the queue of files to be saved.
 	 * @param file the file to be saved
 	 */
-	public static void save(AudioFile file) {
+	public static void save(Metafile file) {
 		LOG.info("Adding file to save queue: ", file);
 		saveQueue.add(file);
 		handler.wake();

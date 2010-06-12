@@ -35,7 +35,7 @@ import javax.swing.tree.TreePath;
 import net.exent.riker.metadata.Album;
 import net.exent.riker.metadata.Artist;
 import net.exent.riker.metadata.Group;
-import net.exent.riker.metadata.MetaFile;
+import net.exent.riker.metadata.Metafile;
 import net.exent.riker.metadata.Track;
 import net.exent.riker.util.FileHandler;
 import net.exent.riker.util.Logger;
@@ -68,7 +68,7 @@ public class Riker extends JFrame {
 	/**
 	 * Map of all loaded metafiles.
 	 */
-	private static Map<String, MetaFile> metafiles = Collections.synchronizedMap(new HashMap<String, MetaFile>());
+	private static Map<String, Metafile> metafiles = Collections.synchronizedMap(new HashMap<String, Metafile>());
 
 	/**
 	 * Default constructor.
@@ -82,7 +82,7 @@ public class Riker extends JFrame {
 	 * @param audioFile the file just read
 	 */
 	public static void fileLoaded(AudioFile audioFile) {
-		MetaFile metaFile = new MetaFile(audioFile);
+		Metafile metaFile = new Metafile(audioFile);
 		LOG.info("Adding MetaFile to Riker: ", metaFile);
 		/* add metafile to map */
 		metafiles.put(metaFile.fileName(), metaFile);
@@ -139,7 +139,7 @@ public class Riker extends JFrame {
 	/**
 	 * Called by Matchers when they're done matching files.
 	 */
-	public static void filesMatched(List<MetaFile> files) {
+	public static void filesMatched(List<Metafile> files) {
 	}
 
 	/** This method is called from within the constructor to

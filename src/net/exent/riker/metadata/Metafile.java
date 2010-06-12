@@ -24,13 +24,20 @@
 package net.exent.riker.metadata;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.tag.FieldKey;
 
 /**
  * A MetaFile is an AudioFile with some more data.
  */
-public class MetaFile extends AudioFile {
+public class Metafile extends AudioFile {
+	/**
+	 * Map of all known metafiles.
+	 */
+	private static Map<String, Metafile> metafiles = Collections.synchronizedMap(new HashMap<String, Metafile>());
 	/**
 	 * The group this metafile belongs to.
 	 */
@@ -44,8 +51,17 @@ public class MetaFile extends AudioFile {
 	 * Default constructor.
 	 * @param audioFile the audiofile this metafile will extend
 	 */
-	public MetaFile(AudioFile audioFile) {
+	public Metafile(AudioFile audioFile) {
 		super(audioFile.getFile(), audioFile.getAudioHeader(), audioFile.getTag());
+		metafiles.put(fileName(), this);
+	}
+
+	/**
+	 * Get map of all known metafiles.
+	 * @return map of all known metafiles
+	 */
+	public static Map<String, Metafile> metafiles() {
+		return Collections.unmodifiableMap(metafiles);
 	}
 
 	/**
