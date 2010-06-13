@@ -39,6 +39,7 @@ import net.exent.riker.metadata.Metafile;
 import net.exent.riker.metadata.Track;
 import net.exent.riker.util.FileHandler;
 import net.exent.riker.util.Logger;
+import net.exent.riker.util.MusicBrainz;
 import org.jaudiotagger.audio.AudioFile;
 
 /**
@@ -83,6 +84,9 @@ public class Riker extends JFrame {
 	 */
 	public static void fileLoaded(AudioFile audioFile) {
 		Metafile metaFile = new Metafile(audioFile);
+		if (metafiles.size() == 0) {
+			MusicBrainz.searchTrack(metaFile);
+		}
 		LOG.info("Adding MetaFile to Riker: ", metaFile);
 		/* add metafile to map */
 		metafiles.put(metaFile.fileName(), metaFile);

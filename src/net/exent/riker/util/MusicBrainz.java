@@ -23,10 +23,22 @@
  */
 package net.exent.riker.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import net.exent.riker.metadata.Album;
 import net.exent.riker.metadata.Metafile;
 import org.jaudiotagger.tag.FieldKey;
@@ -35,6 +47,10 @@ import org.jaudiotagger.tag.FieldKey;
  * Class for searching MusicBrainz.
  */
 public final class MusicBrainz {
+	/**
+	 * Logger for this class.
+	 */
+	private static final Logger LOG = new Logger(MusicBrainz.class);
 	/**
 	 * The last time we sent a request to MusicBrainz.
 	 * We may only send a request once per second.
@@ -68,7 +84,7 @@ public final class MusicBrainz {
 		String lastDirectory = escape(file.fileName().substring(file.fileName().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash));
 		String basename = escape(file.fileName().substring(lastSlash + 1, file.fileName().lastIndexOf('.')));
 
-		StringBuffer query = new StringBuffer("query=");
+		StringBuffer query = new StringBuffer();
 		/* track number */
 		String tracknum = escape(file.getTag().getFirst(FieldKey.TRACK));
 		if (tracknum == null) {
@@ -102,7 +118,41 @@ public final class MusicBrainz {
 			query.append(album).append(' ');
 		query.append(lastDirectory).append(' ').append(basename).append(") ");
 
+		/* fetch result */
 		List<Album> trackAlbums = new ArrayList<Album>();
+		try {
+			delay();
+			URL url = new URL("http://musicbrainz.org/ws/1/track/?type=xml&limit=25&query=" + URLEncoder.encode(query.toString(), "UTF-8"));
+			LOG.debug("Connecting to MusicBrainz: ", url);
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.connect();
+
+			XMLStreamReader xmlStreamReader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(connection.getInputStream()));
+
+			boolean active = true;
+			while (active) {
+				switch (xmlStreamReader.nextTag()) {
+					case XMLStreamConstants.START_ELEMENT:
+						LOG.info(xmlStreamReader.getLocalName() + ": " + xmlStreamReader.getAttributeCount());
+						break;
+
+					case XMLStreamConstants.END_DOCUMENT:
+						xmlStreamReader.close();
+						active = false;
+						break;
+
+					default:
+						break;
+				}
+			}
+		} catch (FactoryConfigurationError e) {
+			LOG.warning(e);
+		} catch (IOException e) {
+			LOG.warning(e);
+		} catch (XMLStreamException e) {
+			LOG.warning(e);
+		}
+
 		return trackAlbums;
 	}
 
@@ -186,15 +236,6 @@ public final class MusicBrainz {
 			}
 		}
 		return sb.toString().trim();
-	}
-
-	/**
-	 * Fetch response from remote server.
-	 * @param url URL to remote server
-	 */
-	private static void fetch(URL url) {
-		/* make sure we don't hassle the remote server too much */
-		delay();
 	}
 
 	/**
