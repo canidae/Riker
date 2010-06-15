@@ -49,7 +49,7 @@ public class Artist {
 	private String mbid;
 
 	/**
-	 * Default constructor.
+	 * Full constructor.
 	 * @param name artist name
 	 * @param sortname artist sortname
 	 * @param mbid MBID for artist
@@ -62,8 +62,18 @@ public class Artist {
 	}
 
 	/**
+	 * Partial constructor for track search, won't add artist to map of artists as we don't get sortname from track search.
+	 * @param name artist name
+	 * @param mbid MBID for artist
+	 */
+	public Artist(String name, String mbid) {
+		this.name = name;
+		this.mbid = mbid;
+	}
+
+	/**
 	 * Get map of all known artists.
-	 * @return map of all known artists
+	 * @return unmodifiable map of all known artists
 	 */
 	public static Map<String, Artist> artists() {
 		return Collections.unmodifiableMap(artists);

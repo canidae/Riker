@@ -57,7 +57,7 @@ public class Group {
 
 	/**
 	 * Get map of all groups.
-	 * @return map of all groups
+	 * @return unmodifiable map of all groups
 	 */
 	public static Map<String, Group> groups() {
 		return Collections.unmodifiableMap(groups);

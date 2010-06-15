@@ -58,7 +58,7 @@ public class Metafile extends AudioFile {
 
 	/**
 	 * Get map of all known metafiles.
-	 * @return map of all known metafiles
+	 * @return unmodifiable map of all known metafiles
 	 */
 	public static Map<String, Metafile> metafiles() {
 		return Collections.unmodifiableMap(metafiles);

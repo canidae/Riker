@@ -61,16 +61,14 @@ public class Track {
 	private int duration;
 
 	/**
-	 * Default constructor.
-	 * @param album the album this track can be found on
+	 * Full constructor.
 	 * @param artist the artist of this track
 	 * @param title the title of the track
 	 * @param mbid the MBID of the track
 	 * @param tracknumber the tracknumber of the track
 	 * @param duration the duration of the track in milliseconds
 	 */
-	public Track(Album album, Artist artist, String title, String mbid, int tracknumber, int duration) {
-		this.album = album;
+	public Track(Artist artist, String title, String mbid, int tracknumber, int duration) {
 		this.artist = artist;
 		this.title = title;
 		this.mbid = mbid;
@@ -81,10 +79,19 @@ public class Track {
 
 	/**
 	 * Get map of all known tracks.
-	 * @return map of all known tracks
+	 * @return unmodifiable map of all known tracks
 	 */
 	public static Map<String, Track> tracks() {
 		return Collections.unmodifiableMap(tracks);
+	}
+
+	/**
+	 * Set album track belongs to.
+	 * This method got default access modifier (package modifier) as only Album should call this method.
+	 * @param album album this track belongs to
+	 */
+	void album(Album album) {
+		this.album = album;
 	}
 
 	/**

@@ -62,7 +62,7 @@ public class Album {
 	private List<Track> tracks;
 
 	/**
-	 * Default constructor.
+	 * Full constructor.
 	 * @param artist the artist of the album
 	 * @param title the title of the album
 	 * @param released when the album was released
@@ -77,12 +77,30 @@ public class Album {
 		this.type = type;
 		this.mbid = mbid;
 		this.tracks = tracks;
+		for (Track track : tracks)
+			track.album(this);
 		albums.put(mbid, this);
 	}
 
 	/**
+	 * Partial constructor for track search, won't add album to map of albums as we don't get artist nor release date from track search.
+	 * @param title the title of the album
+	 * @param type the type of the album
+	 * @param mbid the MBID of the album
+	 * @param tracks the tracks on the album
+	 */
+	public Album(String title, String type, String mbid, List<Track> tracks) {
+		this.title = title;
+		this.type = type;
+		this.mbid = mbid;
+		this.tracks = tracks;
+		for (Track track : tracks)
+			track.album(this);
+	}
+
+	/**
 	 * Get map of all known albums.
-	 * @return map of all known albums
+	 * @return unmodifiable map of all known albums
 	 */
 	public static Map<String, Album> albums() {
 		return Collections.unmodifiableMap(albums);

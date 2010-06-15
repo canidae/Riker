@@ -1,18 +1,18 @@
 /*
  *  The MIT License
- * 
+ *
  *  Copyright 2010 Vidar Wahlberg <canidae@exent.net>.
- * 
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is
  *  furnished to do so, subject to the following conditions:
- * 
+ *
  *  The above copyright notice and this permission notice shall be included in
  *  all copies or substantial portions of the Software.
- * 
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,23 +24,24 @@
 package net.exent.riker.util;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import net.exent.riker.metadata.Album;
+import net.exent.riker.metadata.Artist;
 import net.exent.riker.metadata.Metafile;
+import net.exent.riker.metadata.Track;
 import org.jaudiotagger.tag.FieldKey;
 
 /**
@@ -123,28 +124,79 @@ public final class MusicBrainz {
 		try {
 			delay();
 			URL url = new URL("http://musicbrainz.org/ws/1/track/?type=xml&limit=25&query=" + URLEncoder.encode(query.toString(), "UTF-8"));
-			LOG.debug("Connecting to MusicBrainz: ", url);
+			LOG.info("Connecting to MusicBrainz: ", url);
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.connect();
 
-			XMLStreamReader xmlStreamReader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(connection.getInputStream()));
-
-			boolean active = true;
-			while (active) {
-				switch (xmlStreamReader.nextTag()) {
+			/* fast xml parsing with stax, very fragile */
+			XMLStreamReader xml = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(connection.getInputStream()));
+			int depth = 0;
+			String lastElement = null;
+			Map<String, String> values = new HashMap<String, String>();
+			while (xml.hasNext()) {
+				switch (xml.next()) {
 					case XMLStreamConstants.START_ELEMENT:
-						LOG.info(xmlStreamReader.getLocalName() + ": " + xmlStreamReader.getAttributeCount());
+						LOG.info(xml.getLocalName() + ": " + xml.getAttributeCount());
+						if (depth == 2 && "track".equals(xml.getLocalName())) {
+							/* track id */
+							values.put("track_mbid", xml.getAttributeValue(null, "id"));
+						} else if (depth == 3 && "artist".equals(xml.getLocalName())) {
+							/* artist id */
+							values.put("artist_mbid", xml.getAttributeValue(null, "id"));
+						} else if (depth == 4 && "release".equals(xml.getLocalName())) {
+							/* album id & type */
+							values.put("album_mbid", xml.getAttributeValue(null, "id"));
+							values.put("album_type", xml.getAttributeValue(null, "type"));
+						} else if (depth == 5 && "track-list".equals(xml.getLocalName())) {
+							/* track offset & album track count */
+							values.put("track_offset", xml.getAttributeValue(null, "offset"));
+							values.put("album_tracks", xml.getAttributeValue(null, "count"));
+						}
+						lastElement = xml.getLocalName();
+						++depth;
 						break;
 
-					case XMLStreamConstants.END_DOCUMENT:
-						xmlStreamReader.close();
-						active = false;
+					case XMLStreamConstants.END_ELEMENT:
+						if (depth == 3 && "track".equals(xml.getLocalName())) {
+							try {
+								int tracknumber = Integer.parseInt(values.get("track_offset")) + 1;
+								int trackduration = Integer.parseInt(values.get("track_duration"));
+								Artist ar = new Artist(values.get("artist_name"), values.get("artist_mbid"));
+								Track tr = new Track(ar, values.get("track_title"), values.get("track_mbid"), tracknumber, trackduration);
+								List<Track> tracks = new ArrayList<Track>();
+								tracks.add(tr);
+								Album al = new Album(values.get("album_title"), values.get("album_type"), values.get("album_mbid"), tracks);
+								trackAlbums.add(al);
+							} catch (NumberFormatException e) {
+								LOG.warning(e);
+							}
+							values.clear();
+						}
+						--depth;
+						break;
+
+					case XMLStreamConstants.CHARACTERS:
+						LOG.info(xml.getText());
+						if (depth == 4 && "title".equals(lastElement)) {
+							/* track title */
+							values.put("track_title", xml.getText());
+						} else if (depth == 4 && "duration".equals(lastElement)) {
+							/* track duration */
+							values.put("track_duration", xml.getText());
+						} else if (depth == 5 && "name".equals(lastElement)) {
+							/* artist name */
+							values.put("artist_name", xml.getText());
+						} else if (depth == 6 && "title".equals(lastElement)) {
+							/* album title */
+							values.put("album_title", xml.getText());
+						}
 						break;
 
 					default:
 						break;
 				}
 			}
+			xml.close();
 		} catch (FactoryConfigurationError e) {
 			LOG.warning(e);
 		} catch (IOException e) {
@@ -170,35 +222,8 @@ public final class MusicBrainz {
 		StringBuffer sb = new StringBuffer();
 		for (int a = 0; a < text.length(); ++a) {
 			switch (text.charAt(a)) {
-				case '$':
-					sb.append("%24");
-					break;
-
-				case '+':
-					sb.append("\\%2b");
-					break;
-
-				case ',':
-					sb.append("%2c");
-					break;
-
-				case '/':
-					sb.append("%2f");
-					break;
-
 				case ':':
-					sb.append("\\%3a");
-					break;
-
-				case '=':
-					sb.append("%3d");
-					break;
-
-				case '@':
-					sb.append("%40");
-					break;
-
-
+				case '+':
 				case '-':
 				case '!':
 				case '(':
