@@ -97,7 +97,11 @@ public final class MusicBrainz {
 						} else if (depth == 3 && "artist".equals(lastElement)) {
 							/* artist id */
 							values.put("artist_mbid", xml.getAttributeValue(null, "id"));
-							values.put("artist_type", xml.getAttributeValue(null, "type"));
+						} else if (depth == 4 && "event".equals(lastElement)) {
+							String date = xml.getAttributeValue(null, "date");
+							if (date != null && (values.get("album_released") == null || date.compareTo(values.get("album_released")) < 0)) {
+								values.put("album_released", date);
+							}
 						} else if (depth == 4 && "track".equals(lastElement)) {
 							/* track id */
 							values.put("track_mbid", xml.getAttributeValue(null, "id"));
@@ -136,7 +140,7 @@ public final class MusicBrainz {
 								LOG.warning(e);
 							}
 						} else if (depth == 2 && "release".equals(xml.getLocalName())) {
-							return new Album(values.get("album_title"), values.get("album_type"), values.get("album_mbid"), tracks);
+							return new Album(artist, values.get("album_title"), values.get("album_released"), values.get("album_type"), values.get("album_mbid"), tracks);
 						}
 						--depth;
 						break;
@@ -233,9 +237,8 @@ public final class MusicBrainz {
 							values.put("album_mbid", xml.getAttributeValue(null, "id"));
 							values.put("album_type", xml.getAttributeValue(null, "type"));
 						} else if (depth == 6 && "track-list".equals(lastElement)) {
-							/* track offset & album track count */
+							/* track offset */
 							values.put("track_offset", xml.getAttributeValue(null, "offset"));
-							values.put("album_tracks", xml.getAttributeValue(null, "count"));
 						}
 						break;
 
