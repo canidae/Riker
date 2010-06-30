@@ -168,9 +168,9 @@ public final class MusicBrainz {
 	 */
 	public static synchronized List<Album> searchTrack(Metafile file) {
 		/* create search query */
-		int lastSlash = file.fileName().lastIndexOf(File.separatorChar);
-		String lastDirectory = escape(file.fileName().substring(file.fileName().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash));
-		String basename = escape(file.fileName().substring(lastSlash + 1, file.fileName().lastIndexOf('.')));
+		int lastSlash = file.filename().lastIndexOf(File.separatorChar);
+		String lastDirectory = escape(file.filename().substring(file.filename().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash));
+		String basename = escape(file.filename().substring(lastSlash + 1, file.filename().lastIndexOf('.')));
 
 		StringBuffer query = new StringBuffer();
 		/* track number */

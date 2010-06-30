@@ -26,7 +26,9 @@ package net.exent.riker.metadata;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.exent.riker.util.Levenshtein;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.tag.FieldKey;
 
@@ -46,6 +48,10 @@ public class Metafile extends AudioFile {
 	 * The track this metafile match.
 	 */
 	private Track track;
+	/**
+	 * A list of semi-unique strings found in metadata and filename.
+	 */
+	private List<String> stringValues;
 
 	/**
 	 * Default constructor.
@@ -53,7 +59,63 @@ public class Metafile extends AudioFile {
 	 */
 	public Metafile(AudioFile audioFile) {
 		super(audioFile.getFile(), audioFile.getAudioHeader(), audioFile.getTag());
-		metafiles.put(fileName(), this);
+		/* add interesting metadata to list of string values */
+		String tmp = getTag().getFirst(FieldKey.ALBUM);
+		if (tmp != null)
+			stringValues.add(tmp);
+		tmp = getTag().getFirst(FieldKey.ALBUM_ARTIST);
+		if (tmp != null)
+			stringValues.add(tmp);
+		tmp = getTag().getFirst(FieldKey.ARTIST);
+		if (tmp != null)
+			stringValues.add(tmp);
+		tmp = getTag().getFirst(FieldKey.TITLE);
+		if (tmp != null)
+			stringValues.add(tmp);
+		tmp = getTag().getFirst(FieldKey.TRACK);
+		if (tmp != null)
+			stringValues.add(tmp);
+		/* add interesting strings from last directory name to list of string values unless a similar value already exist in list */
+		int lastSlash = filename().lastIndexOf(File.separatorChar);
+		String directory = filename().substring(filename().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash).replace('_', ' ');
+		for (String value : directory.split("-")) {
+			boolean valueExists = false;
+			for (String listValue : stringValues) {
+				if (Levenshtein.similarity(value, listValue) >= 0.8)
+					valueExists = true;
+			}
+			if (!valueExists)
+				stringValues.add(value);
+		}
+		/* add interesting strings from base filename to list of string values unless a similar value already exist in list */
+		String basename = filename().substring(lastSlash + 1).replace('_', ' ');
+		for (String value : basename.split("-\\.")) {
+			boolean valueExists = false;
+			for (String listValue : stringValues) {
+				if (Levenshtein.similarity(value, listValue) >= 0.8)
+					valueExists = true;
+			}
+			if (!valueExists)
+				stringValues.add(value);
+		}
+		metafiles.put(filename(), this);
+	}
+
+	/**
+	 * Create group name from metadata in file.
+	 * @return group name of file
+	 */
+	public String createGroupName() {
+		String groupName = getTag().getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
+		if (groupName == null || "".equals(groupName))
+			groupName = getTag().getFirst(FieldKey.ALBUM);
+		if (groupName == null || "".equals(groupName)) {
+			String path = getFile().getAbsolutePath();
+			groupName = path.substring(0, path.lastIndexOf(File.separatorChar));
+		}
+		if (groupName == null)
+			groupName = "<none>";
+		return groupName + " (" + getAudioHeader().getFormat() + ", " + getAudioHeader().getSampleRate() + ", " + getAudioHeader().getChannels() + ")";
 	}
 
 	/**
@@ -62,6 +124,14 @@ public class Metafile extends AudioFile {
 	 */
 	public static Map<String, Metafile> metafiles() {
 		return Collections.unmodifiableMap(metafiles);
+	}
+
+	/**
+	 * Get a list of semi-unique strings found in metadata and filename.
+	 * @return a list of semi-unique strings found in metadata and filename
+	 */
+	public List<String> stringValues() {
+		return stringValues;
 	}
 
 	/**
@@ -97,32 +167,15 @@ public class Metafile extends AudioFile {
 	}
 
 	/**
-	 * Create group name from metadata in file.
-	 * @return group name of file
+	 * Get the filename of this metafile.
+	 * @return filename of metafile
 	 */
-	public String createGroupName() {
-		String groupName = getTag().getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
-		if (groupName == null || "".equals(groupName))
-			groupName = getTag().getFirst(FieldKey.ALBUM);
-		if (groupName == null || "".equals(groupName)) {
-			String path = getFile().getAbsolutePath();
-			groupName = path.substring(0, path.lastIndexOf(File.separatorChar));
-		}
-		if (groupName == null)
-			groupName = "<none>";
-		return groupName + " (" + getAudioHeader().getFormat() + ", " + getAudioHeader().getSampleRate() + ", " + getAudioHeader().getChannels() + ")";
-	}
-
-	/**
-	 * Get the file name of this metafile.
-	 * @return file name of metafile
-	 */
-	public String fileName() {
+	public String filename() {
 		return getFile().getAbsolutePath();
 	}
 
 	@Override
 	public String toString() {
-		return fileName();
+		return filename();
 	}
 }

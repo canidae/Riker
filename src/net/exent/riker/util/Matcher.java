@@ -35,20 +35,35 @@ import net.exent.riker.metadata.Track;
  */
 public class Matcher implements Runnable {
 	/**
-	 * Matrix used for calculating the Levenshtein distance.
-	 */
-	private int[][] matrix = new int[512][512];
-	/**
 	 * List of files to compare with data from MusicBrainz.
 	 */
 	private List<Metafile> files;
+	/**
+	 * If set, only match files with this album.
+	 */
+	private String albumMbid;
+	/**
+	 * Comparisons between a track and metafiles.
+	 */
+	private Map<Track, Map<Metafile, Double>> comparison = new HashMap<Track, Map<Metafile, Double>>();
 
 	/**
 	 * Default constructor.
-	 * @param files the files we wish to compare against data from Musicbrainz.
+	 * @param files the files we wish to compare against data from Musicbrainz
 	 */
 	public Matcher(List<Metafile> files) {
 		this.files = files;
+		new Thread(this).run();
+	}
+
+	/**
+	 * Constructor with specified MBID for album to compare files with.
+	 * @param files the files we wish to compare against data from Musicbrainz
+	 * @param albumMbid MBID of album to compare files with
+	 */
+	public Matcher(List<Metafile> files, String albumMbid) {
+		this.files = files;
+		this.albumMbid = albumMbid;
 		new Thread(this).run();
 	}
 
@@ -57,58 +72,29 @@ public class Matcher implements Runnable {
 	 */
 	@Override
 	public void run() {
-		Map<Track, Map<Metafile, Double>> comparison = new HashMap<Track, Map<Metafile, Double>>();
-		List<Metafile> queue = files.subList(0, files.size());
-		while (!queue.isEmpty()) {
-			Metafile file = queue.remove(0);
-			/* if we got album mbid, look that up first */
-			/* if not, search track */
-			/* load albums from track search */
-			/* compare files with album and remove good matches from queue */
+		if (albumMbid == null) {
+			/* search tracks on musicbrainz */
+			List<Metafile> queue = files.subList(0, files.size());
+			while (!queue.isEmpty()) {
+				Metafile file = queue.remove(0);
+				/* if we got album mbid, look that up first */
+				/* if not, search track */
+				/* load album[s] */
+				/* compare all files with the album[s] we loaded and remove good matches from queue */
+			}
+		} else {
+			/* only match files with given album */
 		}
 		Riker.filesMatched(files);
 	}
 
 	/**
-	 * Calculate the similarity between two strings, value returned goes from 0.0 to 1.0 where lowest value means complete mismatch and highest value means the strings are identical.
-	 * This is done by dividing the Levenshtein distance between the two strings with the length of the largest input string.
-	 * The comparison is case insensitive.
-	 * If either of the strings are empty then 0.0 is returned.
-	 * @param string1 the first input string
-	 * @param string2 the second input string
-	 * @return the similarity of the strings, value from 0.0 to 1.0
+	 * Compare a metafile with a track.
+	 * @param file the Metafile to compare
+	 * @param track the Track to compare
+	 * @return a value between 0.0 and 1.0 where 0.0 is complete mismatch and 1.0 is perfect match
 	 */
-	private double similarity(String string1, String string2) {
-		/* check that both strings contain data */
-		if (string1 == null || string2 == null || string1.length() == 0 || string2.length() == 0)
-			return 0.0;
-		/* resize matrix if it's too small */
-		int maxLength = Math.max(string1.length(), string2.length());
-		if (maxLength >= matrix.length)
-			matrix = new int[maxLength + 1][maxLength + 1];
-		/* lowercase strings */
-		string1 = string1.toLowerCase();
-		string2 = string2.toLowerCase();
-		/* compare the strings */
-		for (int a = 1; a <= string1.length(); ++a) {
-			for (int b = 1; b <= string2.length(); ++b) {
-				int cost = string1.charAt(a - 1) == string2.charAt(b - 1) ? 0 : 1;
-				int above = matrix[a - 1][b];
-				int left = matrix[a][b - 1];
-				int diag = matrix[a - 1][b - 1];
-				int cell = Math.min(above + 1, Math.min(left + 1, diag + cost));
-				if (a > 2 && b > 2) {
-					int trans = matrix[a - 2][b - 2] + 1;
-					if (string1.charAt(a - 2) != string2.charAt(b - 1))
-						++trans;
-					if (string1.charAt(a - 1) != string2.charAt(b - 2))
-						++trans;
-					if (cell > trans)
-						cell = trans;
-				}
-				matrix[a][b] = cell;
-			}
-		}
-		return 1.0 - (double) matrix[string1.length()][string2.length()] / (double) maxLength;
+	private double compareMetafileWithTrack(Metafile file, Track track) {
+		return 0.0;
 	}
 }

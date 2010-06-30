@@ -83,28 +83,28 @@ public class Riker extends JFrame {
 	 * @param audioFile the file just read
 	 */
 	public static void fileLoaded(AudioFile audioFile) {
-		Metafile metaFile = new Metafile(audioFile);
+		Metafile metafile = new Metafile(audioFile);
 		if (metafiles.size() == 0) {
-			MusicBrainz.searchTrack(metaFile);
+			MusicBrainz.searchTrack(metafile);
 		}
-		LOG.info("Adding MetaFile to Riker: ", metaFile);
+		LOG.info("Adding Metafile to Riker: ", metafile);
 		/* add metafile to map */
-		metafiles.put(metaFile.fileName(), metaFile);
+		metafiles.put(metafile.filename(), metafile);
 		/* add group to map */
-		String groupName = metaFile.createGroupName();
+		String groupName = metafile.createGroupName();
 		Group group = groups.get(groupName);
 		if (group == null) {
 			group = new Group(groupName);
 			groups.put(groupName, group);
 		}
 		/* add metafile to group */
-		group.addFile(metaFile);
+		group.addFile(metafile);
 		/* let metafile know which group it belongs to */
-		metaFile.group(group);
+		metafile.group(group);
 		/* update matchTree */
 		DefaultTreeModel model = (DefaultTreeModel) matchTree.getModel();
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-		DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(metaFile);
+		DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(metafile);
 		Enumeration groupNodes = root.children();
 		int groupNodeIndex = 0;
 		while (groupNodes.hasMoreElements()) {
