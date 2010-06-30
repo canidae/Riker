@@ -80,6 +80,7 @@ public class Metafile extends AudioFile {
 		int lastSlash = filename().lastIndexOf(File.separatorChar);
 		String directory = filename().substring(filename().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash).replace('_', ' ');
 		for (String value : directory.split("-")) {
+			value = value.trim();
 			boolean valueExists = false;
 			for (String listValue : stringValues) {
 				if (Levenshtein.similarity(value, listValue) >= 0.8) {
@@ -91,20 +92,21 @@ public class Metafile extends AudioFile {
 				stringValues.add(value);
 		}
 		/* add interesting strings from base filename to list of string values unless a similar value already exist in list */
-		String basename = filename().substring(lastSlash + 1).replace('_', ' ');
-		for (String value : basename.split("-\\.")) {
-			boolean valueExists = false;
-			for (String listValue : stringValues) {
-				if (Levenshtein.similarity(value, listValue) >= 0.8) {
-					valueExists = true;
-					break;
+		String basename = filename().substring(lastSlash + 1, filename().lastIndexOf(".")).replace('_', ' ');
+		for (String valueTmp : basename.split("-")) {
+			for (String value : valueTmp.split("\\.")) {
+				value = value.trim();
+				boolean valueExists = false;
+				for (String listValue : stringValues) {
+					if (Levenshtein.similarity(value, listValue) >= 0.8) {
+						valueExists = true;
+						break;
+					}
 				}
+				if (!valueExists)
+					stringValues.add(value);
 			}
-			if (!valueExists)
-				stringValues.add(value);
 		}
-		for (String t : stringValues)
-			System.out.println(t);
 		metafiles.put(filename(), this);
 	}
 
@@ -188,7 +190,7 @@ public class Metafile extends AudioFile {
 
 	/**
 	 * Get first value for given field.
-	 * This is a wrapper for getFirst() in AudioFile as that seems to return "" when field is not set, instead of null.
+	 * This is a wrapper for getFirst() in Tag as that seems to return "" when field is not set, instead of null.
 	 * Method will also trim() the string to remove leading and trailing whitespaces.
 	 * @param key the field to get value from
 	 * @return the value of the given field

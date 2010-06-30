@@ -52,6 +52,10 @@ public final class Levenshtein {
 		/* set matrix size */
 		int maxLength = Math.max(string1.length(), string2.length());
 		int[][] matrix = new int[maxLength + 1][maxLength + 1];
+		for (int a = 0; a < matrix.length; ++a) {
+			matrix[a][0] = a;
+			matrix[0][a] = a;
+		}
 		/* lowercase strings */
 		string1 = string1.toLowerCase();
 		string2 = string2.toLowerCase();
