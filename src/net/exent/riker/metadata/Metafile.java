@@ -24,6 +24,7 @@
 package net.exent.riker.metadata;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +52,7 @@ public class Metafile extends AudioFile {
 	/**
 	 * A list of semi-unique strings found in metadata and filename.
 	 */
-	private List<String> stringValues;
+	private List<String> stringValues = new ArrayList<String>();
 
 	/**
 	 * Default constructor.
@@ -60,19 +61,19 @@ public class Metafile extends AudioFile {
 	public Metafile(AudioFile audioFile) {
 		super(audioFile.getFile(), audioFile.getAudioHeader(), audioFile.getTag());
 		/* add interesting metadata to list of string values */
-		String tmp = getTag().getFirst(FieldKey.ALBUM);
+		String tmp = getFirst(FieldKey.ALBUM);
 		if (tmp != null)
 			stringValues.add(tmp);
-		tmp = getTag().getFirst(FieldKey.ALBUM_ARTIST);
+		tmp = getFirst(FieldKey.ALBUM_ARTIST);
 		if (tmp != null)
 			stringValues.add(tmp);
-		tmp = getTag().getFirst(FieldKey.ARTIST);
+		tmp = getFirst(FieldKey.ARTIST);
 		if (tmp != null)
 			stringValues.add(tmp);
-		tmp = getTag().getFirst(FieldKey.TITLE);
+		tmp = getFirst(FieldKey.TITLE);
 		if (tmp != null)
 			stringValues.add(tmp);
-		tmp = getTag().getFirst(FieldKey.TRACK);
+		tmp = getFirst(FieldKey.TRACK);
 		if (tmp != null)
 			stringValues.add(tmp);
 		/* add interesting strings from last directory name to list of string values unless a similar value already exist in list */
@@ -81,8 +82,10 @@ public class Metafile extends AudioFile {
 		for (String value : directory.split("-")) {
 			boolean valueExists = false;
 			for (String listValue : stringValues) {
-				if (Levenshtein.similarity(value, listValue) >= 0.8)
+				if (Levenshtein.similarity(value, listValue) >= 0.8) {
 					valueExists = true;
+					break;
+				}
 			}
 			if (!valueExists)
 				stringValues.add(value);
@@ -92,12 +95,16 @@ public class Metafile extends AudioFile {
 		for (String value : basename.split("-\\.")) {
 			boolean valueExists = false;
 			for (String listValue : stringValues) {
-				if (Levenshtein.similarity(value, listValue) >= 0.8)
+				if (Levenshtein.similarity(value, listValue) >= 0.8) {
 					valueExists = true;
+					break;
+				}
 			}
 			if (!valueExists)
 				stringValues.add(value);
 		}
+		for (String t : stringValues)
+			System.out.println(t);
 		metafiles.put(filename(), this);
 	}
 
@@ -106,10 +113,10 @@ public class Metafile extends AudioFile {
 	 * @return group name of file
 	 */
 	public String createGroupName() {
-		String groupName = getTag().getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
-		if (groupName == null || "".equals(groupName))
-			groupName = getTag().getFirst(FieldKey.ALBUM);
-		if (groupName == null || "".equals(groupName)) {
+		String groupName = getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
+		if (groupName == null)
+			groupName = getFirst(FieldKey.ALBUM);
+		if (groupName == null) {
 			String path = getFile().getAbsolutePath();
 			groupName = path.substring(0, path.lastIndexOf(File.separatorChar));
 		}
@@ -177,5 +184,22 @@ public class Metafile extends AudioFile {
 	@Override
 	public String toString() {
 		return filename();
+	}
+
+	/**
+	 * Get first value for given field.
+	 * This is a wrapper for getFirst() in AudioFile as that seems to return "" when field is not set, instead of null.
+	 * Method will also trim() the string to remove leading and trailing whitespaces.
+	 * @param key the field to get value from
+	 * @return the value of the given field
+	 */
+	public String getFirst(FieldKey key) {
+		String value = getTag().getFirst(key);
+		if (value == null)
+			return value;
+		value = value.trim();
+		if ("".equals(value))
+			return null;
+		return value;
 	}
 }

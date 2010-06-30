@@ -174,7 +174,7 @@ public final class MusicBrainz {
 
 		StringBuffer query = new StringBuffer();
 		/* track number */
-		String tracknum = escape(file.getTag().getFirst(FieldKey.TRACK));
+		String tracknum = escape(file.getFirst(FieldKey.TRACK));
 		if (tracknum == null) {
 			/* TODO: attempt to get tracknum from basename */
 		} else {
@@ -188,19 +188,19 @@ public final class MusicBrainz {
 			query.append("qdur:[" + lower).append(" TO " + upper).append("] ");
 		}
 		/* artist */
-		String artist = escape(file.getTag().getFirst(FieldKey.ARTIST));
+		String artist = escape(file.getFirst(FieldKey.ARTIST));
 		query.append("artist:(");
 		if (artist != null)
 			query.append(artist).append(' ');
 		query.append(lastDirectory).append(' ').append(basename).append(") ");
 		/* title */
-		String title = escape(file.getTag().getFirst(FieldKey.TITLE));
+		String title = escape(file.getFirst(FieldKey.TITLE));
 		query.append("track:(");
 		if (title != null)
 			query.append(title).append(' ');
 		query.append(basename).append(") ");
 		/* release */
-		String album = escape(file.getTag().getFirst(FieldKey.ALBUM));
+		String album = escape(file.getFirst(FieldKey.ALBUM));
 		query.append("release:(");
 		if (artist != null)
 			query.append(album).append(' ');
