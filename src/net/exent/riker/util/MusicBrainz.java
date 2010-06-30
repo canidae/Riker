@@ -70,6 +70,89 @@ public final class MusicBrainz {
 	 * @return the album if found.
 	 */
 	public static synchronized Album loadAlbum(String mbid) {
+		Artist artist = null;
+		List<Track> tracks = new ArrayList<Track>();
+		try {
+			delay();
+			URL url = new URL("http://musicbrainz.org/ws/1/release/" + mbid + "?type=xml&inc=tracks+artist+release-events+labels+artist-rels+url-rels");
+			LOG.info("Connecting to MusicBrainz: ", url);
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.connect();
+
+			/* fast xml parsing with stax, very fragile */
+			XMLStreamReader xml = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(connection.getInputStream()));
+			int depth = 0;
+			String lastElement = null;
+			Map<String, String> values = new HashMap<String, String>();
+			while (xml.hasNext()) {
+				switch (xml.next()) {
+					case XMLStreamConstants.START_ELEMENT:
+						++depth;
+						lastElement = xml.getLocalName();
+						LOG.info(lastElement + ": " + xml.getAttributeCount());
+						if (depth == 2 && "release".equals(lastElement)) {
+							/* album id & type */
+							values.put("album_mbid", xml.getAttributeValue(null, "id"));
+							values.put("album_type", xml.getAttributeValue(null, "type"));
+						} else if (depth == 3 && "artist".equals(lastElement)) {
+							/* artist id */
+							values.put("artist_mbid", xml.getAttributeValue(null, "id"));
+							values.put("artist_type", xml.getAttributeValue(null, "type"));
+						} else if (depth == 4 && "track".equals(lastElement)) {
+							/* track id */
+							values.put("track_mbid", xml.getAttributeValue(null, "id"));
+						}
+						break;
+
+					case XMLStreamConstants.CHARACTERS:
+						LOG.info(xml.getText());
+						if (depth == 3 && "title".equals(lastElement)) {
+							/* album title */
+							values.put("album_title", xml.getText());
+						} else if (depth == 4 && "name".equals(lastElement)) {
+							/* artist name */
+							values.put("artist_name", xml.getText());
+						} else if (depth == 4 && "sort-name".equals(lastElement)) {
+							/* artist sortname */
+							values.put("artist_sortname", xml.getText());
+						} else if (depth == 5 && "duration".equals(lastElement)) {
+							/* track duration */
+							values.put("track_duration", xml.getText());
+						} else if (depth == 5 && "title".equals(lastElement)) {
+							/* track title */
+							values.put("track_title", xml.getText());
+						}
+						break;
+
+					case XMLStreamConstants.END_ELEMENT:
+						if (depth == 3 && "artist".equals(xml.getLocalName())) {
+							artist = new Artist(values.get("artist_name"), values.get("artist_sortname"), values.get("artist_mbid"));
+						} else if (depth == 4 && "track".equals(xml.getLocalName())) {
+							try {
+								int trackduration = Integer.parseInt(values.get("track_duration"));
+								Track tr = new Track(artist, values.get("track_title"), values.get("track_mbid"), tracks.size() + 1, trackduration);
+								tracks.add(tr);
+							} catch (NumberFormatException e) {
+								LOG.warning(e);
+							}
+						} else if (depth == 2 && "release".equals(xml.getLocalName())) {
+							return new Album(values.get("album_title"), values.get("album_type"), values.get("album_mbid"), tracks);
+						}
+						--depth;
+						break;
+
+					default:
+						break;
+				}
+			}
+			xml.close();
+		} catch (FactoryConfigurationError e) {
+			LOG.warning(e);
+		} catch (IOException e) {
+			LOG.warning(e);
+		} catch (XMLStreamException e) {
+			LOG.warning(e);
+		}
 		return null;
 	}
 
@@ -136,24 +219,41 @@ public final class MusicBrainz {
 			while (xml.hasNext()) {
 				switch (xml.next()) {
 					case XMLStreamConstants.START_ELEMENT:
-						LOG.info(xml.getLocalName() + ": " + xml.getAttributeCount());
-						if (depth == 2 && "track".equals(xml.getLocalName())) {
+						++depth;
+						lastElement = xml.getLocalName();
+						LOG.info(lastElement + ": " + xml.getAttributeCount());
+						if (depth == 3 && "track".equals(lastElement)) {
 							/* track id */
 							values.put("track_mbid", xml.getAttributeValue(null, "id"));
-						} else if (depth == 3 && "artist".equals(xml.getLocalName())) {
+						} else if (depth == 4 && "artist".equals(lastElement)) {
 							/* artist id */
 							values.put("artist_mbid", xml.getAttributeValue(null, "id"));
-						} else if (depth == 4 && "release".equals(xml.getLocalName())) {
+						} else if (depth == 5 && "release".equals(lastElement)) {
 							/* album id & type */
 							values.put("album_mbid", xml.getAttributeValue(null, "id"));
 							values.put("album_type", xml.getAttributeValue(null, "type"));
-						} else if (depth == 5 && "track-list".equals(xml.getLocalName())) {
+						} else if (depth == 6 && "track-list".equals(lastElement)) {
 							/* track offset & album track count */
 							values.put("track_offset", xml.getAttributeValue(null, "offset"));
 							values.put("album_tracks", xml.getAttributeValue(null, "count"));
 						}
-						lastElement = xml.getLocalName();
-						++depth;
+						break;
+
+					case XMLStreamConstants.CHARACTERS:
+						LOG.info(xml.getText());
+						if (depth == 4 && "title".equals(lastElement)) {
+							/* track title */
+							values.put("track_title", xml.getText());
+						} else if (depth == 4 && "duration".equals(lastElement)) {
+							/* track duration */
+							values.put("track_duration", xml.getText());
+						} else if (depth == 5 && "name".equals(lastElement)) {
+							/* artist name */
+							values.put("artist_name", xml.getText());
+						} else if (depth == 6 && "title".equals(lastElement)) {
+							/* album title */
+							values.put("album_title", xml.getText());
+						}
 						break;
 
 					case XMLStreamConstants.END_ELEMENT:
@@ -173,23 +273,6 @@ public final class MusicBrainz {
 							values.clear();
 						}
 						--depth;
-						break;
-
-					case XMLStreamConstants.CHARACTERS:
-						LOG.info(xml.getText());
-						if (depth == 4 && "title".equals(lastElement)) {
-							/* track title */
-							values.put("track_title", xml.getText());
-						} else if (depth == 4 && "duration".equals(lastElement)) {
-							/* track duration */
-							values.put("track_duration", xml.getText());
-						} else if (depth == 5 && "name".equals(lastElement)) {
-							/* artist name */
-							values.put("artist_name", xml.getText());
-						} else if (depth == 6 && "title".equals(lastElement)) {
-							/* album title */
-							values.put("album_title", xml.getText());
-						}
 						break;
 
 					default:
