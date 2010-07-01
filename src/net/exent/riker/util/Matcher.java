@@ -29,6 +29,7 @@ import java.util.Map;
 import net.exent.riker.gui.Riker;
 import net.exent.riker.metadata.Metafile;
 import net.exent.riker.metadata.Track;
+import net.exent.riker.util.Levenshtein;
 
 /**
  * Class for matching metadata from a group of files with metadata from MusicBrainz.
@@ -95,6 +96,48 @@ public class Matcher implements Runnable {
 	 * @return a value between 0.0 and 1.0 where 0.0 is complete mismatch and 1.0 is perfect match
 	 */
 	private double compareMetafileWithTrack(Metafile file, Track track) {
-		return 0.0;
+		List<String> values = file.stringValues();
+		if (values.size() <= 0)
+			return 0.0;
+		/* calculate Levenshtein similarity of all file metadata with track metadata */
+		double[][] scores = new double[4][values.size()];
+		int index = 0;
+		for (String value : values) {
+			scores[0][index] = Levenshtein.similarity(value, track.album().title());
+			scores[1][index] = Levenshtein.similarity(value, track.artist().name());
+			scores[2][index] = Levenshtein.similarity(value, track.title());
+			scores[3][index] = value.equals("" + track.tracknumber()) ? 1.0 : 0.0;
+			++index;
+		}
+		/* calculate the best possible score from metadata */
+		double bestScore = 0.0;
+		int[] bestPath = new int[4];
+		for (int albumIndex = 0; albumIndex < values.size(); ++albumIndex) {
+			for (int artistIndex = 0; artistIndex < values.size(); ++artistIndex) {
+				if (artistIndex == albumIndex)
+					continue;
+				for (int titleIndex = 0; titleIndex < values.size(); ++titleIndex) {
+					if (titleIndex == artistIndex || titleIndex == albumIndex)
+						continue;
+					for (int tracknumIndex = 0; tracknumIndex < values.size(); ++tracknumIndex) {
+						if (tracknumIndex == titleIndex || tracknumIndex == artistIndex || tracknumIndex == albumIndex)
+							continue;
+						double score = scores[0][albumIndex] + scores[1][artistIndex] + scores[2][titleIndex] + scores[3][tracknumIndex];
+						if (score > bestScore) {
+							bestScore = score;
+							bestPath[0] = albumIndex;
+							bestPath[1] = artistIndex;
+							bestPath[2] = titleIndex;
+							bestPath[3] = tracknumIndex;
+						}
+					}
+				}
+			}
+		}
+		/* add score from duration */
+		int durationDiff = Math.abs(file.getAudioHeader().getTrackLength() - track.duration());
+		if (durationDiff < 15000)
+			bestScore += 1.0 - (double) durationDiff / 15000.0;
+		return bestScore / 5.0;
 	}
 }

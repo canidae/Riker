@@ -60,6 +60,32 @@ public class Metafile extends AudioFile {
 	 */
 	public Metafile(AudioFile audioFile) {
 		super(audioFile.getFile(), audioFile.getAudioHeader(), audioFile.getTag());
+		updateStringValues();
+		metafiles.put(filename(), this);
+	}
+
+	/**
+	 * Create group name from metadata in file.
+	 * @return group name of file
+	 */
+	public String createGroupName() {
+		String groupName = getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
+		if (groupName == null)
+			groupName = getFirst(FieldKey.ALBUM);
+		if (groupName == null) {
+			String path = getFile().getAbsolutePath();
+			groupName = path.substring(0, path.lastIndexOf(File.separatorChar));
+		}
+		if (groupName == null)
+			groupName = "<none>";
+		return groupName + " (" + getAudioHeader().getFormat() + ", " + getAudioHeader().getSampleRate() + ", " + getAudioHeader().getChannels() + ")";
+	}
+
+	/**
+	 * Update the list of string values.
+	 */
+	public void updateStringValues() {
+		stringValues.clear();
 		/* add interesting metadata to list of string values */
 		String tmp = getFirst(FieldKey.ALBUM);
 		if (tmp != null)
@@ -107,24 +133,6 @@ public class Metafile extends AudioFile {
 					stringValues.add(value);
 			}
 		}
-		metafiles.put(filename(), this);
-	}
-
-	/**
-	 * Create group name from metadata in file.
-	 * @return group name of file
-	 */
-	public String createGroupName() {
-		String groupName = getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
-		if (groupName == null)
-			groupName = getFirst(FieldKey.ALBUM);
-		if (groupName == null) {
-			String path = getFile().getAbsolutePath();
-			groupName = path.substring(0, path.lastIndexOf(File.separatorChar));
-		}
-		if (groupName == null)
-			groupName = "<none>";
-		return groupName + " (" + getAudioHeader().getFormat() + ", " + getAudioHeader().getSampleRate() + ", " + getAudioHeader().getChannels() + ")";
 	}
 
 	/**
