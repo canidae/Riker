@@ -27,9 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.exent.riker.gui.Riker;
+import net.exent.riker.metadata.Album;
 import net.exent.riker.metadata.Metafile;
 import net.exent.riker.metadata.Track;
-import net.exent.riker.util.Levenshtein;
+import org.jaudiotagger.tag.FieldKey;
 
 /**
  * Class for matching metadata from a group of files with metadata from MusicBrainz.
@@ -47,6 +48,10 @@ public class Matcher implements Runnable {
 	 * Comparisons between a track and metafiles.
 	 */
 	private Map<Track, Map<Metafile, Double>> comparison = new HashMap<Track, Map<Metafile, Double>>();
+	/**
+	 * Queue of files to do a track search on MusicBrainz.
+	 */
+	private List<Metafile> queue;
 
 	/**
 	 * Default constructor.
@@ -54,6 +59,7 @@ public class Matcher implements Runnable {
 	 */
 	public Matcher(List<Metafile> files) {
 		this.files = files;
+		queue = files.subList(0, files.size());
 		new Thread(this).run();
 	}
 
@@ -75,18 +81,68 @@ public class Matcher implements Runnable {
 	public void run() {
 		if (albumMbid == null) {
 			/* search tracks on musicbrainz */
-			List<Metafile> queue = files.subList(0, files.size());
 			while (!queue.isEmpty()) {
 				Metafile file = queue.remove(0);
 				/* if we got album mbid, look that up first */
-				/* if not, search track */
-				/* load album[s] */
-				/* compare all files with the album[s] we loaded and remove good matches from queue */
+				String fileAlbumMbid = file.getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
+				Album album = null;
+				if (fileAlbumMbid != null)
+					album = loadAlbum(fileAlbumMbid);
+				if (album != null) {
+					compareAllMetafilesWithAlbum(album);
+				} else {
+					/* if not, search track */
+					List<Album> albums = MusicBrainz.searchTrack(file);
+					/* load best album */
+					double bestScore = 0.0;
+					Album bestAlbum = null;
+					for (Album tmpAlbum : albums) {
+						double score = compareMetafileWithTrack(file, tmpAlbum.tracks().get(0));
+						if (score > bestScore) {
+							bestScore = score;
+							bestAlbum = album;
+						}
+					}
+					album = loadAlbum(bestAlbum.mbid());
+					/* compare all files with the album we loaded and remove good matches from queue */
+					if (album != null)
+						compareAllMetafilesWithAlbum(album);
+				}
 			}
 		} else {
 			/* only match files with given album */
+			Album album = loadAlbum(albumMbid);
+			if (album != null)
+				compareAllMetafilesWithAlbum(album);
 		}
+		/* update metafiles with best matched track */
+		/* tell Riker that we're done matching these files */
 		Riker.filesMatched(files);
+	}
+
+	/**
+	 * Compare all metafiles with given album.
+	 * @param album the album to compare the metafiles with
+	 */
+	private void compareAllMetafilesWithAlbum(Album album) {
+		for (Track track : album.tracks()) {
+			for (Metafile file : files) {
+				double score = compareMetafileWithTrack(file, track);
+				/* if score is bad, don't waste memory keeping the comparison */
+				if (score < 0.3)
+					continue;
+				/* if score is good enough, remove metafile from queue */
+				if (queue != null && score > 0.5)
+					queue.remove(file);
+				/* save comparison */
+				Map<Metafile, Double> trackComparison = comparison.get(track);
+				if (trackComparison == null) {
+					trackComparison = new HashMap<Metafile, Double>();
+					comparison.put(track, trackComparison);
+				}
+				trackComparison.put(file, score);
+			}
+		}
 	}
 
 	/**
@@ -139,5 +195,17 @@ public class Matcher implements Runnable {
 		if (durationDiff < 15000)
 			bestScore += 1.0 - (double) durationDiff / 15000.0;
 		return bestScore / 5.0;
+	}
+
+	/**
+	 * Load album from cache if we already loaded it or from MusicBrainz if not.
+	 * @param mbid the MBID of the album to load
+	 * @return album for given MBID
+	 */
+	private Album loadAlbum(String mbid) {
+		Album album = Album.albums().get(mbid);
+		if (album == null)
+			album = MusicBrainz.loadAlbum(mbid);
+		return album;
 	}
 }
