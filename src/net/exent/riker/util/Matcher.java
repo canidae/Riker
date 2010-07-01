@@ -214,7 +214,6 @@ public class Matcher implements Runnable {
 		}
 		/* calculate the best possible score from metadata */
 		double bestScore = 0.0;
-		int[] bestPath = new int[4];
 		for (int albumIndex = 0; albumIndex < values.size(); ++albumIndex) {
 			for (int artistIndex = 0; artistIndex < values.size(); ++artistIndex) {
 				if (artistIndex == albumIndex)
@@ -226,13 +225,8 @@ public class Matcher implements Runnable {
 						if (tracknumIndex == titleIndex || tracknumIndex == artistIndex || tracknumIndex == albumIndex)
 							continue;
 						double score = scores[0][albumIndex] + scores[1][artistIndex] + scores[2][titleIndex] + scores[3][tracknumIndex];
-						if (score > bestScore) {
+						if (score > bestScore)
 							bestScore = score;
-							bestPath[0] = albumIndex;
-							bestPath[1] = artistIndex;
-							bestPath[2] = titleIndex;
-							bestPath[3] = tracknumIndex;
-						}
 					}
 				}
 			}
