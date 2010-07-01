@@ -23,6 +23,7 @@
  */
 package net.exent.riker.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,13 +42,13 @@ public class Matcher implements Runnable {
 	 */
 	private List<Metafile> files;
 	/**
-	 * If set, only match files with this album.
+	 * If set, only match files with these albums.
 	 */
-	private String albumMbid;
+	private List<String> albumMbids = new ArrayList<String>();
 	/**
-	 * Comparisons between a track and metafiles.
+	 * Comparisons between a track and metafiles in each album.
 	 */
-	private Map<Track, Map<Metafile, Double>> comparison = new HashMap<Track, Map<Metafile, Double>>();
+	private Map<Album, Map<Track, Map<Metafile, Double>>> comparison = new HashMap<Album, Map<Track, Map<Metafile, Double>>>();
 	/**
 	 * Queue of files to do a track search on MusicBrainz.
 	 */
@@ -59,7 +60,7 @@ public class Matcher implements Runnable {
 	 */
 	public Matcher(List<Metafile> files) {
 		this.files = files;
-		queue = files.subList(0, files.size());
+		queue.addAll(files);
 		new Thread(this).run();
 	}
 
@@ -70,7 +71,18 @@ public class Matcher implements Runnable {
 	 */
 	public Matcher(List<Metafile> files, String albumMbid) {
 		this.files = files;
-		this.albumMbid = albumMbid;
+		albumMbids.add(albumMbid);
+		new Thread(this).run();
+	}
+
+	/**
+	 * Constructor with specified MBIDs for albums to compare files with.
+	 * @param files the files we wish to compare against data from Musicbrainz
+	 * @param albumMbids MBIDs of albums to compare files with
+	 */
+	public Matcher(List<Metafile> files, List<String> albumMbids) {
+		this.files = files;
+		this.albumMbids.addAll(albumMbids);
 		new Thread(this).run();
 	}
 
@@ -79,15 +91,15 @@ public class Matcher implements Runnable {
 	 */
 	@Override
 	public void run() {
-		if (albumMbid == null) {
+		if (albumMbids.size() <= 0) {
 			/* search tracks on musicbrainz */
 			while (!queue.isEmpty()) {
 				Metafile file = queue.remove(0);
 				/* if we got album mbid, look that up first */
-				String fileAlbumMbid = file.getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
+				String albumMbid = file.getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
 				Album album = null;
-				if (fileAlbumMbid != null)
-					album = loadAlbum(fileAlbumMbid);
+				if (albumMbid != null)
+					album = loadAlbum(albumMbid);
 				if (album != null) {
 					compareAllMetafilesWithAlbum(album);
 				} else {
@@ -110,12 +122,42 @@ public class Matcher implements Runnable {
 				}
 			}
 		} else {
-			/* only match files with given album */
-			Album album = loadAlbum(albumMbid);
-			if (album != null)
-				compareAllMetafilesWithAlbum(album);
+			/* only match files with given albums */
+			for (String albumMbid : albumMbids) {
+				Album album = loadAlbum(albumMbid);
+				if (album != null)
+					compareAllMetafilesWithAlbum(album);
+			}
 		}
 		/* update metafiles with best matched track */
+		Album bestAlbum = null;
+		double bestAlbumScore = 0.0;
+		for (Map.Entry<Album, Map<Track, Map<Metafile, Double>>> album : comparison.entrySet()) {
+			double albumScore = 0.0;
+			for (Map.Entry<Track, Map<Metafile, Double>> track : album.getValue().entrySet()) {
+				double bestMetafileScore = 0.0;
+				for (Map.Entry<Metafile, Double> metafile : track.getValue().entrySet()) {
+					if (metafile.getValue() > bestMetafileScore)
+						bestMetafileScore = metafile.getValue();
+				}
+				albumScore += bestMetafileScore;
+			}
+			if (albumScore > bestAlbumScore) {
+				bestAlbum = album.getKey();
+				bestAlbumScore = albumScore;
+			}
+		}
+		for (Map.Entry<Track, Map<Metafile, Double>> track : comparison.get(bestAlbum).entrySet()) {
+			Metafile bestMetafile = null;
+			double bestMetafileScore = 0.0;
+			for (Map.Entry<Metafile, Double> metafile : track.getValue().entrySet()) {
+				if (metafile.getValue() > bestMetafileScore) {
+					bestMetafile = metafile.getKey();
+					bestMetafileScore = metafile.getValue();
+				}
+			}
+			bestMetafile.track(track.getKey());
+		}
 		/* tell Riker that we're done matching these files */
 		Riker.filesMatched(files);
 	}
@@ -135,10 +177,15 @@ public class Matcher implements Runnable {
 				if (queue != null && score > 0.5)
 					queue.remove(file);
 				/* save comparison */
-				Map<Metafile, Double> trackComparison = comparison.get(track);
+				Map<Track, Map<Metafile, Double>> albumComparison = comparison.get(album);
+				if (albumComparison == null) {
+					albumComparison = new HashMap<Track, Map<Metafile, Double>>();
+					comparison.put(album, albumComparison);
+				}
+				Map<Metafile, Double> trackComparison = albumComparison.get(track);
 				if (trackComparison == null) {
 					trackComparison = new HashMap<Metafile, Double>();
-					comparison.put(track, trackComparison);
+					albumComparison.put(track, trackComparison);
 				}
 				trackComparison.put(file, score);
 			}
