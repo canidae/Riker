@@ -64,7 +64,6 @@ public class Metafile extends AudioFile {
 	 */
 	public Metafile(AudioFile audioFile) {
 		super(audioFile.getFile(), audioFile.getAudioHeader(), audioFile.getTag());
-		updateStringValues();
 		metafiles.put(filename(), this);
 	}
 
@@ -152,6 +151,8 @@ public class Metafile extends AudioFile {
 	 * @return a list of semi-unique strings found in metadata and filename
 	 */
 	public List<String> stringValues() {
+		if (stringValues.size() <= 0)
+			updateStringValues();
 		return stringValues;
 	}
 

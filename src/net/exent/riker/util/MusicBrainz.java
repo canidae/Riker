@@ -163,44 +163,44 @@ public final class MusicBrainz {
 	/**
 	 * Search MusicBrainz for tracks matching the given file.
 	 * Note that the albums returned are not complete albums, they only contain 1 track as well as limited data!
-	 * @param file the file we'll create a search query from
+	 * @param metafile the file we'll create a search query from
 	 * @return a list of albums containing matching tracks
 	 */
-	public static synchronized List<Album> searchTrack(Metafile file) {
+	public static synchronized List<Album> searchTrack(Metafile metafile) {
 		/* create search query */
-		int lastSlash = file.filename().lastIndexOf(File.separatorChar);
-		String lastDirectory = escape(file.filename().substring(file.filename().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash));
-		String basename = escape(file.filename().substring(lastSlash + 1, file.filename().lastIndexOf('.')));
+		int lastSlash = metafile.filename().lastIndexOf(File.separatorChar);
+		String lastDirectory = escape(metafile.filename().substring(metafile.filename().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash));
+		String basename = escape(metafile.filename().substring(lastSlash + 1, metafile.filename().lastIndexOf('.')));
 
 		StringBuffer query = new StringBuffer();
 		/* track number */
-		String tracknum = escape(file.getFirst(FieldKey.TRACK));
+		String tracknum = escape(metafile.getFirst(FieldKey.TRACK));
 		if (tracknum == null) {
 			/* TODO: attempt to get tracknum from basename */
 		} else {
 			query.append("tnum:").append(tracknum).append(' ');
 		}
 		/* duration */
-		int duration = file.getAudioHeader().getTrackLength();
+		int duration = metafile.getAudioHeader().getTrackLength();
 		if (duration > 0) {
 			int lower = Math.max(0, duration / 1000 - 10);
 			int upper = duration / 1000 + 10;
 			query.append("qdur:[" + lower).append(" TO " + upper).append("] ");
 		}
 		/* artist */
-		String artist = escape(file.getFirst(FieldKey.ARTIST));
+		String artist = escape(metafile.getFirst(FieldKey.ARTIST));
 		query.append("artist:(");
 		if (artist != null)
 			query.append(artist).append(' ');
 		query.append(lastDirectory).append(' ').append(basename).append(") ");
 		/* title */
-		String title = escape(file.getFirst(FieldKey.TITLE));
+		String title = escape(metafile.getFirst(FieldKey.TITLE));
 		query.append("track:(");
 		if (title != null)
 			query.append(title).append(' ');
 		query.append(basename).append(") ");
 		/* release */
-		String album = escape(file.getFirst(FieldKey.ALBUM));
+		String album = escape(metafile.getFirst(FieldKey.ALBUM));
 		query.append("release:(");
 		if (artist != null)
 			query.append(album).append(' ');
