@@ -50,6 +50,10 @@ public class Metafile extends AudioFile {
 	 */
 	private Track track;
 	/**
+	 * How well the metafile match the track.
+	 */
+	private double matchScore;
+	/**
 	 * A list of semi-unique strings found in metadata and filename.
 	 */
 	private List<String> stringValues = new ArrayList<String>();
@@ -176,11 +180,21 @@ public class Metafile extends AudioFile {
 	}
 
 	/**
+	 * Get how well the metafile matched the track.
+	 * @return how well the metafile matched the track
+	 */
+	public double matchScore() {
+		return matchScore;
+	}
+
+	/**
 	 * Set the track this metafile match.
 	 * @param track the track this metafile match
+	 * @param matchScore how well the metafile matched the track
 	 */
-	public void track(Track track) {
+	public void track(Track track, double matchScore) {
 		this.track = track;
+		this.matchScore = matchScore;
 	}
 
 	/**

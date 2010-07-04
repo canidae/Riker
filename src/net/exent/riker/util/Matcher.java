@@ -156,7 +156,7 @@ public class Matcher implements Runnable {
 					bestMetafileScore = metafile.getValue();
 				}
 			}
-			bestMetafile.track(track.getKey());
+			bestMetafile.track(track.getKey(), bestMetafileScore);
 		}
 		/* tell Riker that we're done matching these files */
 		Riker.filesMatched(files);
