@@ -56,34 +56,34 @@ public class Matcher implements Runnable {
 
 	/**
 	 * Default constructor.
-	 * @param files the files we wish to compare against data from Musicbrainz
+	 * @param files the files we wish to compare against data from MusicBrainz
 	 */
 	public Matcher(List<Metafile> files) {
 		this.files = files;
 		queue.addAll(files);
-		new Thread(this).run();
+		new Thread(this).start();
 	}
 
 	/**
 	 * Constructor with specified MBID for album to compare files with.
-	 * @param files the files we wish to compare against data from Musicbrainz
+	 * @param files the files we wish to compare against data from MusicBrainz
 	 * @param albumMbid MBID of album to compare files with
 	 */
 	public Matcher(List<Metafile> files, String albumMbid) {
 		this.files = files;
 		albumMbids.add(albumMbid);
-		new Thread(this).run();
+		new Thread(this).start();
 	}
 
 	/**
 	 * Constructor with specified MBIDs for albums to compare files with.
-	 * @param files the files we wish to compare against data from Musicbrainz
+	 * @param files the files we wish to compare against data from MusicBrainz
 	 * @param albumMbids MBIDs of albums to compare files with
 	 */
 	public Matcher(List<Metafile> files, List<String> albumMbids) {
 		this.files = files;
 		this.albumMbids.addAll(albumMbids);
-		new Thread(this).run();
+		new Thread(this).start();
 	}
 
 	/**
