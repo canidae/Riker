@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import net.exent.riker.gui.Riker;
 import net.exent.riker.metadata.Metafile;
-import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 
 /**
@@ -138,14 +137,14 @@ public final class FileHandler implements Runnable {
 			}
 			boolean filesSaved = false;
 			while (active && saveQueue.size() > 0) {
-				AudioFile audioFile = saveQueue.remove(0);
+				Metafile metafile = saveQueue.remove(0);
 				try {
-					LOG.info("Saving file: ", audioFile.getFile().getAbsolutePath());
-					audioFile.commit();
+					LOG.info("Saving file: ", metafile.filename());
+					metafile.commit();
 					/* TODO: Riker.fileSaved(audioFile); */
 					filesSaved = true;
 				} catch (Exception e) {
-					LOG.warning(e, "Could not save file: ", audioFile.getFile().getAbsolutePath());
+					LOG.warning(e, "Could not save file: ", metafile.filename());
 					/* TODO: Riker.fileSaveFailed(audioFile, e); */
 				}
 			}
