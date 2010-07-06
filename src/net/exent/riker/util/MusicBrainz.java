@@ -172,7 +172,7 @@ public final class MusicBrainz {
 		String lastDirectory = escape(metafile.filename().substring(metafile.filename().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash));
 		String basename = escape(metafile.filename().substring(lastSlash + 1, metafile.filename().lastIndexOf('.')));
 
-		StringBuffer query = new StringBuffer();
+		StringBuilder query = new StringBuilder();
 		/* track number */
 		String tracknum = escape(metafile.getFirst(FieldKey.TRACK));
 		if (tracknum == null) {
@@ -185,7 +185,7 @@ public final class MusicBrainz {
 		if (duration > 0) {
 			int lower = Math.max(0, duration / 1000 - 10);
 			int upper = duration / 1000 + 10;
-			query.append("qdur:[" + lower).append(" TO " + upper).append("] ");
+			query.append("qdur:[").append(lower).append(" TO ").append(upper).append("] ");
 		}
 		/* artist */
 		String artist = escape(metafile.getFirst(FieldKey.ARTIST));
@@ -305,7 +305,7 @@ public final class MusicBrainz {
 		text = text.trim();
 		if ("".equals(text))
 			return null;
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int a = 0; a < text.length(); ++a) {
 			switch (text.charAt(a)) {
 				case ':':
@@ -359,7 +359,7 @@ public final class MusicBrainz {
 				Thread.sleep(delayTime);
 			} catch (InterruptedException e) {
 				/* this never really happens */
-				e.printStackTrace();
+				LOG.warning(e, "Unable to delay query to MusicBrains");
 			}
 		}
 		lastRequestTime = System.currentTimeMillis();
