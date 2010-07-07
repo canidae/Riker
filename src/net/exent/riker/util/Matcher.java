@@ -39,6 +39,10 @@ import org.jaudiotagger.tag.FieldKey;
 public class Matcher implements Runnable {
 
 	/**
+	 * Cache of all loaded albums.
+	 */
+	private static Map<String, Album> albumCache = new HashMap<String, Album>();
+	/**
 	 * A reference to the user interface that created this Matcher.
 	 */
 	private Riker riker;
@@ -269,9 +273,13 @@ public class Matcher implements Runnable {
 	 * @return album for given MBID
 	 */
 	private Album loadAlbum(String mbid) {
-		Album album = Album.albums().get(mbid);
+		Album album = albumCache.get(mbid);
 		if (album == null) {
 			album = MusicBrainz.loadAlbum(mbid);
+			/* add album to cache */
+			if (album != null) {
+				albumCache.put(album.mbid(), album);
+			}
 		}
 		return album;
 	}
