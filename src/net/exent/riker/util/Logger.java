@@ -36,6 +36,7 @@ import java.util.logging.LogRecord;
  * The downside is that when logging exceptions you'll have to specify the exception before the text.
  */
 public class Logger {
+
 	/**
 	 * A reference to the Logger library.
 	 */
@@ -190,6 +191,7 @@ public class Logger {
 	 * Custom log levels for Java logging as the standard log levels are really weird.
 	 */
 	private static final class LoggerLevel extends Level {
+
 		/**
 		 * Error log level.
 		 */
@@ -221,6 +223,7 @@ public class Logger {
 	 * A Formatter for our logging.
 	 */
 	private static class LoggerFormatter extends Formatter {
+
 		/**
 		 * String format when logging a message without a throwable.
 		 */
@@ -244,8 +247,9 @@ public class Logger {
 			if (record.getThrown() != null) {
 				StringBuilder sb = new StringBuilder(1024);
 				sb.append(record.getThrown()).append(NEWLINE);
-				for (StackTraceElement ste : record.getThrown().getStackTrace())
+				for (StackTraceElement ste : record.getThrown().getStackTrace()) {
 					sb.append("        at ").append(ste).append(NEWLINE);
+				}
 				return String.format(WITH_THROWABLE, System.currentTimeMillis(), record.getLevel().getName(), record.getThreadID(), record.getLoggerName(), record.getMessage(), sb);
 			} else {
 				return String.format(WITHOUT_THROWABLE, System.currentTimeMillis(), record.getLevel().getName(), record.getThreadID(), record.getLoggerName(), record.getMessage());

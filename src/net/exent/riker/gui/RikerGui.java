@@ -32,6 +32,7 @@ import javax.swing.JFrame;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import net.exent.riker.Riker;
 import net.exent.riker.metadata.Album;
 import net.exent.riker.metadata.Artist;
 import net.exent.riker.metadata.Group;
@@ -45,7 +46,8 @@ import org.jaudiotagger.audio.AudioFile;
 /**
  * GUI class.
  */
-public class RikerGui extends JFrame {
+public class RikerGui extends JFrame implements Riker {
+
 	/**
 	 * Logger for this class.
 	 */
@@ -78,12 +80,8 @@ public class RikerGui extends JFrame {
 		initComponents();
 	}
 
-	/**
-	 * Called by FileHandler when it reads a new file.
-	 * @param audioFile the file just read
-	 */
-	public static void fileLoaded(AudioFile audioFile) {
-		Metafile metafile = new Metafile(audioFile);
+	@Override
+	public void fileLoaded(Metafile metafile) {
 		if (metafiles.isEmpty()) {
 			MusicBrainz.searchTrack(metafile);
 		}
@@ -123,8 +121,9 @@ public class RikerGui extends JFrame {
 				model.insertNodeInto(fileNode, groupNode, fileNodeIndex);
 				return;
 			}
-			if (groupName.compareTo(groupNode.toString()) > 0)
+			if (groupName.compareTo(groupNode.toString()) > 0) {
 				++groupNodeIndex;
+			}
 		}
 		/* group name did not match any existing groups, create a new one */
 		DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode(group);
@@ -133,17 +132,13 @@ public class RikerGui extends JFrame {
 		matchTree.expandPath(new TreePath(root.getPath()));
 	}
 
-	/**
-	 * Called by FileHandler when all files in queue are loaded.
-	 */
-	public static void filesLoaded() {
+	@Override
+	public void filesLoaded() {
 		/* TODO: start up matchers for each group */
 	}
 
-	/**
-	 * Called by Matchers when they're done matching files.
-	 */
-	public static void filesMatched(List<Metafile> files) {
+	@Override
+	public void filesMatched(List<Metafile> files) {
 	}
 
 	/** This method is called from within the constructor to
@@ -184,11 +179,14 @@ public class RikerGui extends JFrame {
 	 */
 	public static void main(String... args) {
 		java.awt.EventQueue.invokeLater(new Runnable() {
+
 			@Override
 			public void run() {
-				new RikerGui().setVisible(true);
-				FileHandler.start();
-				FileHandler.load("/home/canidae/Music");
+				RikerGui rg = new RikerGui();
+				rg.setVisible(true);
+				FileHandler fh = new FileHandler(rg);
+				fh.start();
+				fh.load("/home/canidae/Music");
 			}
 		});
 	}

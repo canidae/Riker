@@ -27,80 +27,83 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import net.exent.riker.gui.RikerGui;
+import net.exent.riker.Riker;
 import net.exent.riker.metadata.Metafile;
 import org.jaudiotagger.audio.AudioFileIO;
 
 /**
  * Class for reading/writing files.
  */
-public final class FileHandler implements Runnable {
+public class FileHandler implements Runnable {
+
 	/**
 	 * Logger for this class.
 	 */
 	private static final Logger LOG = new Logger(FileHandler.class);
 	/**
-	 * The only instance of this class.
+	 * A reference to the user interface that created this FileHandler.
 	 */
-	private static FileHandler handler = new FileHandler();
+	private Riker riker;
 	/**
 	 * A list of directories/files to load.
 	 */
-	private static List<String> loadQueue = Collections.synchronizedList(new ArrayList<String>());
+	private List<String> loadQueue = Collections.synchronizedList(new ArrayList<String>());
 	/**
 	 * A map of files to save and the metadata it should be saved with.
 	 */
-	private static List<Metafile> saveQueue = Collections.synchronizedList(new ArrayList<Metafile>());
+	private List<Metafile> saveQueue = Collections.synchronizedList(new ArrayList<Metafile>());
 	/**
 	 * Whether the thread is active.
 	 */
-	private static boolean active;
+	private boolean active;
 
 	/**
-	 * Private constructor as we only want one instance of FileHandler.
+	 * Default constructor.
+	 * @param riker reference to the user interface creating this FileHandler
 	 */
-	private FileHandler() {
+	public FileHandler(Riker riker) {
+		this.riker = riker;
 	}
 
 	/**
 	 * Add a directory/file to the load queue.
 	 * @param path the directory/file to add to the load queue
 	 */
-	public static void load(String path) {
+	public void load(String path) {
 		LOG.info("Loading files from path: ", path);
 		loadQueue.add(path);
-		handler.wake();
+		wake();
 	}
 
 	/**
 	 * Add a file to the queue of files to be saved.
 	 * @param file the file to be saved
 	 */
-	public static void save(Metafile file) {
+	public void save(Metafile file) {
 		LOG.info("Adding file to save queue: ", file);
 		saveQueue.add(file);
-		handler.wake();
+		wake();
 	}
 
 	/**
 	 * Start the thread.
 	 */
-	public static synchronized void start() {
+	public synchronized void start() {
 		if (!active) {
 			LOG.info("Starting thread");
 			active = true;
-			new Thread(handler).start();
+			new Thread(this).start();
 		}
 	}
 
 	/**
 	 * Stop the thread.
 	 */
-	public static synchronized void stop() {
+	public synchronized void stop() {
 		if (active) {
 			LOG.info("Stopping thread");
 			active = false;
-			handler.wake();
+			wake();
 		}
 	}
 
@@ -116,13 +119,14 @@ public final class FileHandler implements Runnable {
 				File file = new File(path);
 				if (file.isDirectory()) {
 					/* add all files/directories in this directory to the loadQueue */
-					for (File f : file.listFiles())
+					for (File f : file.listFiles()) {
 						loadQueue.add(f.getAbsolutePath());
+					}
 				} else if (file.isFile()) {
 					/* try to read the file as an MetaFile */
 					try {
 						LOG.info("Reading file: ", file.getAbsolutePath());
-						RikerGui.fileLoaded(AudioFileIO.read(file));
+						riker.fileLoaded(new Metafile(AudioFileIO.read(file)));
 						filesLoaded = true;
 					} catch (Exception e) {
 						LOG.notice(e, "Unable to read file: ", path);
@@ -133,7 +137,7 @@ public final class FileHandler implements Runnable {
 				}
 			}
 			if (filesLoaded) {
-				RikerGui.filesLoaded();
+				riker.filesLoaded();
 			}
 			boolean filesSaved = false;
 			while (active && saveQueue.size() > 0) {
@@ -151,8 +155,9 @@ public final class FileHandler implements Runnable {
 			if (filesSaved) {
 				/* TODO: Riker.filesSaved(); */
 			}
-			if (active && loadQueue.size() <= 0 && saveQueue.size() <= 0)
+			if (active && loadQueue.size() <= 0 && saveQueue.size() <= 0) {
 				sleep();
+			}
 		}
 	}
 
