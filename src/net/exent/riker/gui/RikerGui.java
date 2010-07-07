@@ -26,8 +26,10 @@ package net.exent.riker.gui;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -37,6 +39,7 @@ import net.exent.riker.metadata.Group;
 import net.exent.riker.metadata.Metafile;
 import net.exent.riker.util.FileHandler;
 import net.exent.riker.util.Logger;
+import net.exent.riker.util.Matcher;
 import net.exent.riker.util.MusicBrainz;
 
 /**
@@ -51,11 +54,15 @@ public class RikerGui extends JFrame implements Riker {
 	/**
 	 * Map of all loaded groups.
 	 */
-	private static Map<String, Group> groups = Collections.synchronizedMap(new HashMap<String, Group>());
+	private Map<String, Group> groups = Collections.synchronizedMap(new HashMap<String, Group>());
 	/**
 	 * Map of all loaded metafiles.
 	 */
-	private static Map<String, Metafile> metafiles = Collections.synchronizedMap(new HashMap<String, Metafile>());
+	private Map<String, Metafile> metafiles = Collections.synchronizedMap(new HashMap<String, Metafile>());
+	/**
+	 * Set of active matchers.
+	 */
+	private Set<Matcher> matchers = new HashSet<Matcher>();
 
 	/**
 	 * Default constructor.
@@ -118,7 +125,11 @@ public class RikerGui extends JFrame implements Riker {
 
 	@Override
 	public void filesLoaded() {
-		/* TODO: start up matchers for each group */
+		for (Map.Entry<String, Group> group : groups.entrySet()) {
+			Matcher matcher = new Matcher(this, group.getValue().files());
+			matchers.add(matcher);
+			matcher.start();
+		}
 	}
 
 	@Override
