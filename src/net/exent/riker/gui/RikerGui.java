@@ -33,15 +33,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import net.exent.riker.Riker;
-import net.exent.riker.metadata.Album;
-import net.exent.riker.metadata.Artist;
 import net.exent.riker.metadata.Group;
 import net.exent.riker.metadata.Metafile;
-import net.exent.riker.metadata.Track;
 import net.exent.riker.util.FileHandler;
 import net.exent.riker.util.Logger;
 import net.exent.riker.util.MusicBrainz;
-import org.jaudiotagger.audio.AudioFile;
 
 /**
  * GUI class.
@@ -52,18 +48,6 @@ public class RikerGui extends JFrame implements Riker {
 	 * Logger for this class.
 	 */
 	private static final Logger LOG = new Logger(FileHandler.class);
-	/**
-	 * Map of all loaded albums.
-	 */
-	private static Map<String, Album> albums = Collections.synchronizedMap(new HashMap<String, Album>());
-	/**
-	 * Map of all loaded artists.
-	 */
-	private static Map<String, Artist> artists = Collections.synchronizedMap(new HashMap<String, Artist>());
-	/**
-	 * Map of all loaded tracks.
-	 */
-	private static Map<String, Track> tracks = Collections.synchronizedMap(new HashMap<String, Track>());
 	/**
 	 * Map of all loaded groups.
 	 */
