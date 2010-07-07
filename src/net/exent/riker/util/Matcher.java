@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.exent.riker.gui.Riker;
+import net.exent.riker.gui.RikerGui;
 import net.exent.riker.metadata.Album;
 import net.exent.riker.metadata.Metafile;
 import net.exent.riker.metadata.Track;
@@ -159,7 +159,7 @@ public class Matcher implements Runnable {
 			bestMetafile.track(track.getKey(), bestMetafileScore);
 		}
 		/* tell Riker that we're done matching these files */
-		Riker.filesMatched(files);
+		RikerGui.filesMatched(files);
 	}
 
 	/**

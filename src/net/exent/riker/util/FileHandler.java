@@ -27,7 +27,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import net.exent.riker.gui.Riker;
+import net.exent.riker.gui.RikerGui;
 import net.exent.riker.metadata.Metafile;
 import org.jaudiotagger.audio.AudioFileIO;
 
@@ -122,7 +122,7 @@ public final class FileHandler implements Runnable {
 					/* try to read the file as an MetaFile */
 					try {
 						LOG.info("Reading file: ", file.getAbsolutePath());
-						Riker.fileLoaded(AudioFileIO.read(file));
+						RikerGui.fileLoaded(AudioFileIO.read(file));
 						filesLoaded = true;
 					} catch (Exception e) {
 						LOG.notice(e, "Unable to read file: ", path);
@@ -133,7 +133,7 @@ public final class FileHandler implements Runnable {
 				}
 			}
 			if (filesLoaded) {
-				Riker.filesLoaded();
+				RikerGui.filesLoaded();
 			}
 			boolean filesSaved = false;
 			while (active && saveQueue.size() > 0) {

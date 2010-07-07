@@ -45,7 +45,7 @@ import org.jaudiotagger.audio.AudioFile;
 /**
  * GUI class.
  */
-public class Riker extends JFrame {
+public class RikerGui extends JFrame {
 	/**
 	 * Logger for this class.
 	 */
@@ -74,7 +74,7 @@ public class Riker extends JFrame {
 	/**
 	 * Default constructor.
 	 */
-	public Riker() {
+	public RikerGui() {
 		initComponents();
 	}
 
@@ -84,7 +84,7 @@ public class Riker extends JFrame {
 	 */
 	public static void fileLoaded(AudioFile audioFile) {
 		Metafile metafile = new Metafile(audioFile);
-		if (metafiles.size() == 0) {
+		if (metafiles.isEmpty()) {
 			MusicBrainz.searchTrack(metafile);
 		}
 		LOG.info("Adding Metafile to Riker: ", metafile);
@@ -186,9 +186,9 @@ public class Riker extends JFrame {
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				new Riker().setVisible(true);
+				new RikerGui().setVisible(true);
 				FileHandler.start();
-				FileHandler.load("/home/canidae/Music/tmp_un");
+				FileHandler.load("/home/canidae/Music");
 			}
 		});
 	}
