@@ -23,49 +23,8 @@
  */
 package net.exent.riker;
 
-import net.exent.riker.metadata.Metafile;
-import net.exent.riker.util.Logger;
-import net.exent.riker.util.Matcher;
-
 /**
- * Main class, organizes threads & logic.
- * A user interface must be supplied to this class.
+ * All Riker user interfaces must implement this interface.
  */
-public class Riker {
-
-	/**
-	 * Logger for this class.
-	 */
-	private static final Logger LOG = new Logger(Riker.class);
-	/**
-	 * Reference to the user interface.
-	 */
-	private RikerUi rikerUi;
-
-	/**
-	 * Default constructor.
-	 * @param rikerUi the user interface
-	 */
-	public Riker(RikerUi rikerUi) {
-		this.rikerUi = rikerUi;
-	}
-
-	/**
-	 * Called by Matchers when they're done matching files.
-	 */
-	public static void filesMatched(Matcher matcher) {
-	}
-
-	/**
-	 * Called by FileHandler when it reads a new file.
-	 * @param metafile the file just read
-	 */
-	public static void fileLoaded(Metafile metafile) {
-	}
-
-	/**
-	 * Called by FileHandler when all files in queue are loaded.
-	 */
-	public static void filesLoaded() {
-	}
+public interface RikerUi {
 }

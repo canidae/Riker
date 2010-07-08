@@ -34,76 +34,74 @@ import org.jaudiotagger.audio.AudioFileIO;
 /**
  * Class for reading/writing files.
  */
-public class FileHandler implements Runnable {
+public final class FileHandler implements Runnable {
 
 	/**
 	 * Logger for this class.
 	 */
 	private static final Logger LOG = new Logger(FileHandler.class);
 	/**
-	 * A reference to the user interface that created this FileHandler.
+	 * The only instance of this class.
 	 */
-	private Riker riker;
+	private static FileHandler handler = new FileHandler();
 	/**
 	 * A list of directories/files to load.
 	 */
-	private List<String> loadQueue = Collections.synchronizedList(new ArrayList<String>());
+	private static List<String> loadQueue = Collections.synchronizedList(new ArrayList<String>());
 	/**
 	 * A map of files to save and the metadata it should be saved with.
 	 */
-	private List<Metafile> saveQueue = Collections.synchronizedList(new ArrayList<Metafile>());
+	private static List<Metafile> saveQueue = Collections.synchronizedList(new ArrayList<Metafile>());
 	/**
 	 * Whether the thread is active.
 	 */
-	private boolean active;
+	private static boolean active;
 
 	/**
-	 * Default constructor.
-	 * @param riker reference to the user interface creating this FileHandler
+	 * Private constructor as we only want one instance of FileHandler.
 	 */
-	public FileHandler(Riker riker) {
-		this.riker = riker;
+	private FileHandler() {
 	}
 
 	/**
 	 * Add a directory/file to the load queue.
 	 * @param path the directory/file to add to the load queue
 	 */
-	public void load(String path) {
+	public static void load(String path) {
 		LOG.info("Loading files from path: ", path);
 		loadQueue.add(path);
-		wake();
+		handler.wake();
 	}
 
 	/**
 	 * Add a file to the queue of files to be saved.
 	 * @param file the file to be saved
 	 */
-	public void save(Metafile file) {
+	public static void save(Metafile file) {
 		LOG.info("Adding file to save queue: ", file);
 		saveQueue.add(file);
-		wake();
+		handler.wake();
 	}
 
 	/**
 	 * Start the thread.
 	 */
-	public synchronized void start() {
+	public static synchronized void start() {
 		if (!active) {
 			LOG.info("Starting thread");
 			active = true;
-			new Thread(this).start();
+			new Thread(handler).start();
 		}
 	}
 
 	/**
 	 * Stop the thread.
 	 */
-	public synchronized void stop() {
+	public static synchronized void stop() {
 		if (active) {
 			LOG.info("Stopping thread");
 			active = false;
-			wake();
+			handler.wake();
 		}
 	}
 
@@ -123,21 +121,21 @@ public class FileHandler implements Runnable {
 						loadQueue.add(f.getAbsolutePath());
 					}
 				} else if (file.isFile()) {
-					/* try to read the file as an MetaFile */
+					/* try to read the file as an Metafile */
 					try {
 						LOG.info("Reading file: ", file.getAbsolutePath());
-						riker.fileLoaded(new Metafile(AudioFileIO.read(file)));
+						Riker.fileLoaded(new Metafile(AudioFileIO.read(file)));
 						filesLoaded = true;
 					} catch (Exception e) {
 						LOG.notice(e, "Unable to read file: ", path);
 						/* TODO: Riker.fileLoadFailed(file, e) */
 					}
 				} else {
-					LOG.notice("Hmm, an entry in the load queue that is neither a directory nor a file(?): ", path);
+					LOG.notice("Unable to read file/directory: ", path);
 				}
 			}
 			if (filesLoaded) {
-				riker.filesLoaded();
+				Riker.filesLoaded();
 			}
 			boolean filesSaved = false;
 			while (active && saveQueue.size() > 0) {

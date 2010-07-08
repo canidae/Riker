@@ -24,6 +24,7 @@
 package net.exent.riker.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,11 +42,7 @@ public class Matcher implements Runnable {
 	/**
 	 * Cache of all loaded albums.
 	 */
-	private static Map<String, Album> albumCache = new HashMap<String, Album>();
-	/**
-	 * A reference to the user interface that created this Matcher.
-	 */
-	private Riker riker;
+	private static Map<String, Album> albumCache = Collections.synchronizedMap(new HashMap<String, Album>());
 	/**
 	 * List of files to compare with data from MusicBrainz.
 	 */
@@ -67,8 +64,7 @@ public class Matcher implements Runnable {
 	 * Default constructor.
 	 * @param files the files we wish to compare against data from MusicBrainz
 	 */
-	public Matcher(Riker riker, List<Metafile> files) {
-		this.riker = riker;
+	public Matcher(List<Metafile> files) {
 		this.files = files;
 		queue.addAll(files);
 	}
@@ -78,20 +74,17 @@ public class Matcher implements Runnable {
 	 * @param files the files we wish to compare against data from MusicBrainz
 	 * @param albumMbid MBID of album to compare files with
 	 */
-	public Matcher(Riker riker, List<Metafile> files, String albumMbid) {
-		this.riker = riker;
+	public Matcher(List<Metafile> files, String albumMbid) {
 		this.files = files;
 		albumMbids.add(albumMbid);
 	}
 
 	/**
 	 * Constructor with specified MBIDs for albums to compare files with.
-	 * @param riker reference to the user interface creating this Matcher
 	 * @param files the files we wish to compare against data from MusicBrainz
 	 * @param albumMbids MBIDs of albums to compare files with
 	 */
-	public Matcher(Riker riker, List<Metafile> files, List<String> albumMbids) {
-		this.riker = riker;
+	public Matcher(List<Metafile> files, List<String> albumMbids) {
 		this.files = files;
 		this.albumMbids.addAll(albumMbids);
 	}
@@ -173,7 +166,7 @@ public class Matcher implements Runnable {
 			bestMetafile.track(track.getKey(), bestMetafileScore);
 		}
 		/* tell Riker that we're done matching these files */
-		riker.filesMatched(files);
+		Riker.filesMatched(this);
 	}
 
 	/**
@@ -272,7 +265,7 @@ public class Matcher implements Runnable {
 	 * @param mbid the MBID of the album to load
 	 * @return album for given MBID
 	 */
-	private Album loadAlbum(String mbid) {
+	private static Album loadAlbum(String mbid) {
 		Album album = albumCache.get(mbid);
 		if (album == null) {
 			album = MusicBrainz.loadAlbum(mbid);

@@ -26,15 +26,12 @@ package net.exent.riker.gui;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import net.exent.riker.Riker;
+import net.exent.riker.RikerUi;
 import net.exent.riker.metadata.Group;
 import net.exent.riker.metadata.Metafile;
 import net.exent.riker.util.FileHandler;
@@ -43,16 +40,16 @@ import net.exent.riker.util.Matcher;
 import net.exent.riker.util.MusicBrainz;
 
 /**
- * GUI class.
+ * Graphical User Interface for Riker.
  */
-public class RikerGui extends JFrame implements Riker {
+public class RikerGui extends JFrame implements RikerUi {
 
 	/**
 	 * Logger for this class.
 	 */
-	private static final Logger LOG = new Logger(FileHandler.class);
+	private static final Logger LOG = new Logger(RikerGui.class);
 	/**
-	 * Map of all loaded groups.
+	 * Map of all groups.
 	 */
 	private Map<String, Group> groups = Collections.synchronizedMap(new HashMap<String, Group>());
 	/**
@@ -62,7 +59,7 @@ public class RikerGui extends JFrame implements Riker {
 	/**
 	 * Set of active matchers.
 	 */
-	private Set<Matcher> matchers = new HashSet<Matcher>();
+	private Map<Matcher, Group> matchers = Collections.synchronizedMap(new HashMap<Matcher, Group>());
 
 	/**
 	 * Default constructor.
@@ -74,6 +71,7 @@ public class RikerGui extends JFrame implements Riker {
 	@Override
 	public void fileLoaded(Metafile metafile) {
 		if (metafiles.isEmpty()) {
+			/* TODO: remove, this is testing */
 			MusicBrainz.searchTrack(metafile);
 		}
 		LOG.info("Adding Metafile to Riker: ", metafile);
@@ -127,13 +125,9 @@ public class RikerGui extends JFrame implements Riker {
 	public void filesLoaded() {
 		for (Map.Entry<String, Group> group : groups.entrySet()) {
 			Matcher matcher = new Matcher(this, group.getValue().files());
-			matchers.add(matcher);
+			matchers.put(matcher, group.getValue());
 			matcher.start();
 		}
-	}
-
-	@Override
-	public void filesMatched(List<Metafile> files) {
 	}
 
 	/** This method is called from within the constructor to
@@ -179,9 +173,7 @@ public class RikerGui extends JFrame implements Riker {
 			public void run() {
 				RikerGui rg = new RikerGui();
 				rg.setVisible(true);
-				FileHandler fh = new FileHandler(rg);
-				fh.start();
-				fh.load("/home/canidae/Music");
+				FileHandler.load("/home/canidae/Music");
 			}
 		});
 	}
