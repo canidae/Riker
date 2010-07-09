@@ -58,7 +58,7 @@ public class Matcher implements Runnable {
 	/**
 	 * Queue of files to do a track search on MusicBrainz.
 	 */
-	private List<Metafile> queue = new ArrayList<Metafile>();
+	private List<Metafile> queue;
 
 	/**
 	 * Default constructor.
@@ -66,7 +66,6 @@ public class Matcher implements Runnable {
 	 */
 	public Matcher(List<Metafile> files) {
 		this.files = files;
-		queue.addAll(files);
 	}
 
 	/**
@@ -95,6 +94,8 @@ public class Matcher implements Runnable {
 	@Override
 	public void run() {
 		if (albumMbids.size() <= 0) {
+			/* no album MBIDs supplied, add all files to queue */
+			queue = new ArrayList<Metafile>(files);
 			/* search tracks on musicbrainz */
 			while (!queue.isEmpty()) {
 				Metafile file = queue.remove(0);
@@ -119,10 +120,12 @@ public class Matcher implements Runnable {
 							bestAlbum = album;
 						}
 					}
-					album = loadAlbum(bestAlbum.mbid());
-					/* compare all files with the album we loaded and remove good matches from queue */
-					if (album != null) {
-						compareAllMetafilesWithAlbum(album);
+					if (bestAlbum != null) {
+						album = loadAlbum(bestAlbum.mbid());
+						/* compare all files with the album we loaded and remove good matches from queue */
+						if (album != null) {
+							compareAllMetafilesWithAlbum(album);
+						}
 					}
 				}
 			}
@@ -154,16 +157,18 @@ public class Matcher implements Runnable {
 				bestAlbumScore = albumScore;
 			}
 		}
-		for (Map.Entry<Track, Map<Metafile, Double>> track : comparison.get(bestAlbum).entrySet()) {
-			Metafile bestMetafile = null;
-			double bestMetafileScore = 0.0;
-			for (Map.Entry<Metafile, Double> metafile : track.getValue().entrySet()) {
-				if (metafile.getValue() > bestMetafileScore) {
-					bestMetafile = metafile.getKey();
-					bestMetafileScore = metafile.getValue();
+		if (bestAlbum != null) {
+			for (Map.Entry<Track, Map<Metafile, Double>> track : comparison.get(bestAlbum).entrySet()) {
+				Metafile bestMetafile = null;
+				double bestMetafileScore = 0.0;
+				for (Map.Entry<Metafile, Double> metafile : track.getValue().entrySet()) {
+					if (metafile.getValue() > bestMetafileScore) {
+						bestMetafile = metafile.getKey();
+						bestMetafileScore = metafile.getValue();
+					}
 				}
+				bestMetafile.track(track.getKey(), bestMetafileScore);
 			}
-			bestMetafile.track(track.getKey(), bestMetafileScore);
 		}
 		/* tell Riker that we're done matching these files */
 		Riker.matcherFinished(this);

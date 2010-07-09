@@ -89,7 +89,6 @@ public final class MusicBrainz {
 					case XMLStreamConstants.START_ELEMENT:
 						++depth;
 						lastElement = xml.getLocalName();
-						LOG.info(lastElement + ": " + xml.getAttributeCount());
 						if (depth == 2 && "release".equals(lastElement)) {
 							/* album id & type */
 							values.put("album_mbid", xml.getAttributeValue(null, "id"));
@@ -109,7 +108,6 @@ public final class MusicBrainz {
 						break;
 
 					case XMLStreamConstants.CHARACTERS:
-						LOG.info(xml.getText());
 						if (depth == 3 && "title".equals(lastElement)) {
 							/* album title */
 							values.put("album_title", xml.getText());
@@ -225,7 +223,6 @@ public final class MusicBrainz {
 					case XMLStreamConstants.START_ELEMENT:
 						++depth;
 						lastElement = xml.getLocalName();
-						LOG.info(lastElement + ": " + xml.getAttributeCount());
 						if (depth == 3 && "track".equals(lastElement)) {
 							/* track id */
 							values.put("track_mbid", xml.getAttributeValue(null, "id"));
@@ -243,7 +240,6 @@ public final class MusicBrainz {
 						break;
 
 					case XMLStreamConstants.CHARACTERS:
-						LOG.info(xml.getText());
 						if (depth == 4 && "title".equals(lastElement)) {
 							/* track title */
 							values.put("track_title", xml.getText());
