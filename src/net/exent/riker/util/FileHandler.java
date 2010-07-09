@@ -135,7 +135,7 @@ public final class FileHandler implements Runnable {
 				}
 			}
 			if (filesLoaded) {
-				Riker.filesLoaded();
+				Riker.allFilesLoaded();
 			}
 			boolean filesSaved = false;
 			while (active && saveQueue.size() > 0) {

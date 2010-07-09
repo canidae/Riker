@@ -58,7 +58,7 @@ public class Matcher implements Runnable {
 	/**
 	 * Queue of files to do a track search on MusicBrainz.
 	 */
-	private List<Metafile> queue;
+	private List<Metafile> queue = new ArrayList<Metafile>();
 
 	/**
 	 * Default constructor.
@@ -166,7 +166,7 @@ public class Matcher implements Runnable {
 			bestMetafile.track(track.getKey(), bestMetafileScore);
 		}
 		/* tell Riker that we're done matching these files */
-		Riker.filesMatched(this);
+		Riker.matcherFinished(this);
 	}
 
 	/**

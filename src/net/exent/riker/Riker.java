@@ -23,7 +23,14 @@
  */
 package net.exent.riker;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import net.exent.riker.gui.RikerGui;
+import net.exent.riker.metadata.Group;
 import net.exent.riker.metadata.Metafile;
+import net.exent.riker.util.FileHandler;
 import net.exent.riker.util.Logger;
 import net.exent.riker.util.Matcher;
 
@@ -31,7 +38,7 @@ import net.exent.riker.util.Matcher;
  * Main class, organizes threads & logic.
  * A user interface must be supplied to this class.
  */
-public class Riker {
+public final class Riker {
 
 	/**
 	 * Logger for this class.
@@ -40,20 +47,48 @@ public class Riker {
 	/**
 	 * Reference to the user interface.
 	 */
-	private RikerUi rikerUi;
+	private static RikerUi rikerUi;
+	/**
+	 * Map of all groups.
+	 */
+	private static Map<String, Group> groups = Collections.synchronizedMap(new HashMap<String, Group>());
+	/**
+	 * Set of active matchers.
+	 */
+	private static Map<Matcher, List<Metafile>> matchers = Collections.synchronizedMap(new HashMap<Matcher, List<Metafile>>());
 
 	/**
-	 * Default constructor.
-	 * @param rikerUi the user interface
+	 * Private constructor to prevent instantiation.
 	 */
-	public Riker(RikerUi rikerUi) {
-		this.rikerUi = rikerUi;
+	private Riker() {
+	}
+
+	/**
+	 * Get all groups.
+	 * @return all groups
+	 */
+	public static Map<String, Group> groups() {
+		return groups;
+	}
+
+	/**
+	 * Main method.
+	 * @param args arguments to Riker
+	 */
+	public static void main(String... args) {
+		RikerGui rg = new RikerGui();
+		rg.setVisible(true);
+		Riker.rikerUi = rg;
+		FileHandler.start();
+		FileHandler.load("/home/canidae/Music");
 	}
 
 	/**
 	 * Called by Matchers when they're done matching files.
 	 */
-	public static void filesMatched(Matcher matcher) {
+	public static void matcherFinished(Matcher matcher) {
+		LOG.info("Matcher finished: " + matcher);
+		matchers.remove(matcher);
 	}
 
 	/**
@@ -61,11 +96,31 @@ public class Riker {
 	 * @param metafile the file just read
 	 */
 	public static void fileLoaded(Metafile metafile) {
+		LOG.info("Adding Metafile to Riker: ", metafile);
+		String groupName = metafile.createGroupName();
+		Group group = groups.get(groupName);
+		if (group == null) {
+			group = new Group(groupName);
+			groups.put(groupName, group);
+		}
+		group.addFile(metafile);
+		metafile.group(group);
+		/* tell the UI that a file was loaded */
+		rikerUi.fileLoaded(metafile);
 	}
 
 	/**
 	 * Called by FileHandler when all files in queue are loaded.
 	 */
-	public static void filesLoaded() {
+	public static void allFilesLoaded() {
+		LOG.info("Done loading files");
+		for (Map.Entry<String, Group> groupEntry : groups.entrySet()) {
+			List<Metafile> files = groupEntry.getValue().files();
+			Matcher matcher = new Matcher(files);
+			matchers.put(matcher, files);
+			matcher.start();
+		}
+		/* tell the UI that we're done loading files */
+		rikerUi.allFilesLoaded();
 	}
 }

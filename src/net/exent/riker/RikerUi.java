@@ -23,8 +23,22 @@
  */
 package net.exent.riker;
 
+import net.exent.riker.metadata.Metafile;
+
 /**
  * All Riker user interfaces must implement this interface.
  */
 public interface RikerUi {
+
+	/**
+	 * Called by Riker when a file has been loaded.
+	 * @param metafile the file that was loaded
+	 */
+	void fileLoaded(Metafile metafile);
+
+	/**
+	 * Called by Riker when all files have been loaded.
+	 * Method may be called multiple times if user adds more files/directories to be loaded.
+	 */
+	void allFilesLoaded();
 }
