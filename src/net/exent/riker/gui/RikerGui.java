@@ -29,6 +29,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import net.exent.riker.RikerUi;
+import net.exent.riker.metadata.Group;
 import net.exent.riker.metadata.Metafile;
 import net.exent.riker.util.Logger;
 
@@ -81,6 +82,10 @@ public class RikerGui extends JFrame implements RikerUi {
 		model.insertNodeInto(groupNode, root, groupNodeIndex);
 		model.insertNodeInto(fileNode, groupNode, 0);
 		matchTree.expandPath(new TreePath(root.getPath()));
+	}
+
+	@Override
+	public void groupMatched(Group group) {
 	}
 
 	@Override

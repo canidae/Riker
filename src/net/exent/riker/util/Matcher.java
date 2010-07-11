@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import net.exent.riker.Riker;
 import net.exent.riker.metadata.Album;
+import net.exent.riker.metadata.Group;
 import net.exent.riker.metadata.Metafile;
 import net.exent.riker.metadata.Track;
 import org.jaudiotagger.tag.FieldKey;
@@ -43,9 +44,9 @@ public class Matcher implements Runnable {
 	 */
 	private static Map<String, Album> albumCache = new HashMap<String, Album>();
 	/**
-	 * List of files to compare with data from MusicBrainz.
+	 * The group to compare with data from MusicBrainz.
 	 */
-	private List<Metafile> files;
+	private Group group;
 	/**
 	 * If set, only match files with these albums.
 	 */
@@ -65,29 +66,29 @@ public class Matcher implements Runnable {
 
 	/**
 	 * Default constructor.
-	 * @param files the files we wish to compare against data from MusicBrainz
+	 * @param group the group we wish to compare against data from MusicBrainz
 	 */
-	public Matcher(List<Metafile> files) {
-		this.files = files;
+	public Matcher(Group group) {
+		this.group = group;
 	}
 
 	/**
 	 * Constructor with specified MBID for album to compare files with.
-	 * @param files the files we wish to compare against data from MusicBrainz
+	 * @param group the group we wish to compare against data from MusicBrainz
 	 * @param albumMbid MBID of album to compare files with
 	 */
-	public Matcher(List<Metafile> files, String albumMbid) {
-		this.files = files;
+	public Matcher(Group group, String albumMbid) {
+		this.group = group;
 		albumMbids.add(albumMbid);
 	}
 
 	/**
 	 * Constructor with specified MBIDs for albums to compare files with.
-	 * @param files the files we wish to compare against data from MusicBrainz
+	 * @param group the group we wish to compare against data from MusicBrainz
 	 * @param albumMbids MBIDs of albums to compare files with
 	 */
-	public Matcher(List<Metafile> files, List<String> albumMbids) {
-		this.files = files;
+	public Matcher(Group group, List<String> albumMbids) {
+		this.group = group;
 		this.albumMbids.addAll(albumMbids);
 	}
 
@@ -100,13 +101,21 @@ public class Matcher implements Runnable {
 	}
 
 	/**
+	 * Get the group for this matcher.
+	 * @return group for this matcher
+	 */
+	public Group group() {
+		return group;
+	}
+
+	/**
 	 * Compare the files with data from MusicBrainz.
 	 */
 	@Override
 	public void run() {
 		if (albumMbids.size() <= 0) {
 			/* no album MBIDs supplied, add all files to queue */
-			queue = new ArrayList<Metafile>(files);
+			queue = new ArrayList<Metafile>(group.files());
 			/* search tracks on musicbrainz */
 			while (!queue.isEmpty()) {
 				Metafile file = queue.remove(0);
@@ -202,7 +211,7 @@ public class Matcher implements Runnable {
 	 */
 	private void compareAllMetafilesWithAlbum(Album album) {
 		for (Track track : album.tracks()) {
-			for (Metafile file : files) {
+			for (Metafile file : group.files()) {
 				double score = compareMetafileWithTrack(file, track);
 				/* if score is bad, don't waste memory keeping the comparison */
 				if (score < 0.3) {

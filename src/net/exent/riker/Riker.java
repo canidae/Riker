@@ -94,6 +94,7 @@ public final class Riker {
 		} else {
 			matcherQueue.remove(0).start();
 		}
+		rikerUi.groupMatched(matcher.group());
 	}
 
 	/**
@@ -121,8 +122,7 @@ public final class Riker {
 		LOG.info("Done loading files");
 		int matcherCount = 0;
 		for (Map.Entry<String, Group> groupEntry : groups.entrySet()) {
-			List<Metafile> files = groupEntry.getValue().files();
-			Matcher matcher = new Matcher(files);
+			Matcher matcher = new Matcher(groupEntry.getValue());
 			if (matcherCount < 8) {
 				matcher.start();
 				++matcherCount;

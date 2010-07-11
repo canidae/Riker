@@ -23,6 +23,7 @@
  */
 package net.exent.riker;
 
+import net.exent.riker.metadata.Group;
 import net.exent.riker.metadata.Metafile;
 
 /**
@@ -35,6 +36,12 @@ public interface RikerUi {
 	 * @param metafile the file that was loaded
 	 */
 	void fileLoaded(Metafile metafile);
+
+	/**
+	 * Called by Riker when a group has been matched.
+	 * @param group the group that was matched
+	 */
+	void groupMatched(Group group);
 
 	/**
 	 * Called by Riker when all files have been loaded.
