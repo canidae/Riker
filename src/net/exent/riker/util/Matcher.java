@@ -24,7 +24,6 @@
 package net.exent.riker.util;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,7 @@ public class Matcher implements Runnable {
 	/**
 	 * Cache of all loaded albums.
 	 */
-	private static Map<String, Album> albumCache = Collections.synchronizedMap(new HashMap<String, Album>());
+	private static Map<String, Album> albumCache = new HashMap<String, Album>();
 	/**
 	 * List of files to compare with data from MusicBrainz.
 	 */
@@ -286,7 +285,7 @@ public class Matcher implements Runnable {
 	 * @param mbid the MBID of the album to load
 	 * @return album for given MBID
 	 */
-	private static Album loadAlbum(String mbid) {
+	private static synchronized Album loadAlbum(String mbid) {
 		Album album = albumCache.get(mbid);
 		if (album == null) {
 			album = MusicBrainz.loadAlbum(mbid);
