@@ -41,4 +41,10 @@ public interface RikerUi {
 	 * Method may be called multiple times if user adds more files/directories to be loaded.
 	 */
 	void allFilesLoaded();
+
+	/**
+	 * Called by Riker when all files have been matched.
+	 * Method may be called multiple times if user adds more files/directories to be loaded.
+	 */
+	void allFilesMatched();
 }

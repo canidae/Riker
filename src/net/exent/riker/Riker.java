@@ -23,6 +23,7 @@
  */
 package net.exent.riker;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +56,7 @@ public final class Riker {
 	/**
 	 * Set of active matchers.
 	 */
-	private static Map<Matcher, List<Metafile>> matchers = Collections.synchronizedMap(new HashMap<Matcher, List<Metafile>>());
+	private static List<Matcher> matcherQueue = Collections.synchronizedList(new ArrayList<Matcher>());
 
 	/**
 	 * Private constructor to prevent instantiation.
@@ -68,7 +69,7 @@ public final class Riker {
 	 * @return all groups
 	 */
 	public static Map<String, Group> groups() {
-		return groups;
+		return Collections.unmodifiableMap(groups);
 	}
 
 	/**
@@ -86,9 +87,13 @@ public final class Riker {
 	/**
 	 * Called by Matchers when they're done matching files.
 	 */
-	public static void matcherFinished(Matcher matcher) {
+	public static synchronized void matcherFinished(Matcher matcher) {
 		LOG.info("Matcher finished: " + matcher);
-		matchers.remove(matcher);
+		if (matcherQueue.isEmpty()) {
+			rikerUi.allFilesMatched();
+		} else {
+			matcherQueue.remove(0).start();
+		}
 	}
 
 	/**
@@ -114,11 +119,16 @@ public final class Riker {
 	 */
 	public static void allFilesLoaded() {
 		LOG.info("Done loading files");
+		int matcherCount = 0;
 		for (Map.Entry<String, Group> groupEntry : groups.entrySet()) {
 			List<Metafile> files = groupEntry.getValue().files();
 			Matcher matcher = new Matcher(files);
-			matchers.put(matcher, files);
-			matcher.start();
+			if (matcherCount < 8) {
+				matcher.start();
+				++matcherCount;
+			} else {
+				matcherQueue.add(matcher);
+			}
 		}
 		/* tell the UI that we're done loading files */
 		rikerUi.allFilesLoaded();

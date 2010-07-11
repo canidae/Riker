@@ -59,6 +59,10 @@ public class Matcher implements Runnable {
 	 * Queue of files to do a track search on MusicBrainz.
 	 */
 	private List<Metafile> queue;
+	/**
+	 * Whether the thread is active.
+	 */
+	private boolean active;
 
 	/**
 	 * Default constructor.
@@ -86,6 +90,14 @@ public class Matcher implements Runnable {
 	public Matcher(List<Metafile> files, List<String> albumMbids) {
 		this.files = files;
 		this.albumMbids.addAll(albumMbids);
+	}
+
+	/**
+	 * Get whether the thread is active.
+	 * @return true if the thread is active, false if not
+	 */
+	public boolean active() {
+		return active;
 	}
 
 	/**
@@ -170,6 +182,7 @@ public class Matcher implements Runnable {
 				bestMetafile.track(track.getKey(), bestMetafileScore);
 			}
 		}
+		active = false;
 		/* tell Riker that we're done matching these files */
 		Riker.matcherFinished(this);
 	}
@@ -177,8 +190,11 @@ public class Matcher implements Runnable {
 	/**
 	 * Start the matching.
 	 */
-	public void start() {
-		new Thread(this).start();
+	public synchronized void start() {
+		if (!active) {
+			active = true;
+			new Thread(this).start();
+		}
 	}
 
 	/**

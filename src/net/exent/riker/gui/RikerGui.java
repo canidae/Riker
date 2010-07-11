@@ -87,6 +87,10 @@ public class RikerGui extends JFrame implements RikerUi {
 	public void allFilesLoaded() {
 	}
 
+	@Override
+	public void allFilesMatched() {
+	}
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
