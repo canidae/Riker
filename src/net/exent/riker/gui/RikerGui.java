@@ -31,6 +31,7 @@ import javax.swing.tree.TreePath;
 import net.exent.riker.RikerUi;
 import net.exent.riker.metadata.Group;
 import net.exent.riker.metadata.Metafile;
+import net.exent.riker.metadata.Track;
 import net.exent.riker.util.Logger;
 
 /**
@@ -86,6 +87,7 @@ public class RikerGui extends JFrame implements RikerUi {
 
 	@Override
 	public void groupMatched(Group group) {
+		setGroupInTree(group);
 	}
 
 	@Override
@@ -94,6 +96,37 @@ public class RikerGui extends JFrame implements RikerUi {
 
 	@Override
 	public void allFilesMatched() {
+	}
+
+	/**
+	 * Add or update a group in the JTree.
+	 * @param group group to add/update in the tree
+	 */
+	private void setGroupInTree(Group group) {
+		DefaultTreeModel model = (DefaultTreeModel) matchTree.getModel();
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+		Enumeration groupNodes = root.children();
+		while (groupNodes.hasMoreElements()) {
+			DefaultMutableTreeNode groupNode = (DefaultMutableTreeNode) groupNodes.nextElement();
+			if (group.name().equals(groupNode.getUserObject().toString())) {
+				/* update this group */
+				groupNode.removeAllChildren();
+				for (Metafile metafile : group.files()) {
+					Track track = metafile.track();
+					if (track != null) {
+					} else {
+					}
+				}
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Add or update a metafile in the JTree.
+	 * @param metafile metafile to add/update in the tree
+	 */
+	private void setMetafileInTree(Metafile metafile) {
 	}
 
 	/** This method is called from within the constructor to
@@ -131,7 +164,7 @@ public class RikerGui extends JFrame implements RikerUi {
         // Variables declaration - do not modify//GEN-BEGIN:variables
         private javax.swing.JButton jButton1;
         private javax.swing.JScrollPane matchScrollPane;
-        private static javax.swing.JTree matchTree;
+        private javax.swing.JTree matchTree;
         private javax.swing.JPanel menuPanel;
         // End of variables declaration//GEN-END:variables
 }
