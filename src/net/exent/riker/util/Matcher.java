@@ -40,6 +40,10 @@ import org.jaudiotagger.tag.FieldKey;
 public class Matcher implements Runnable {
 
 	/**
+	 * Logger for this class.
+	 */
+	private static final Logger LOG = new Logger(Matcher.class);
+	/**
 	 * Cache of all loaded albums.
 	 */
 	private static Map<String, Album> albumCache = new HashMap<String, Album>();
@@ -137,13 +141,14 @@ public class Matcher implements Runnable {
 						double score = compareMetafileWithTrack(file, tmpAlbum.tracks().get(0));
 						if (score > bestScore) {
 							bestScore = score;
-							bestAlbum = album;
+							bestAlbum = tmpAlbum;
 						}
 					}
 					if (bestAlbum != null) {
 						album = loadAlbum(bestAlbum.mbid());
 						/* compare all files with the album we loaded and remove good matches from queue */
 						if (album != null) {
+							LOG.info("Comparing all metafiles with loaded album: ", album);
 							compareAllMetafilesWithAlbum(album);
 						}
 					}

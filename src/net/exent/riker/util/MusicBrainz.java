@@ -70,6 +70,7 @@ public final class MusicBrainz {
 	 * @return the album if found.
 	 */
 	public static synchronized Album loadAlbum(String mbid) {
+		LOG.info("Loading album with MBID \"", mbid, "\"");
 		Artist artist = null;
 		List<Track> tracks = new ArrayList<Track>();
 		try {
@@ -138,7 +139,9 @@ public final class MusicBrainz {
 								LOG.warning(e);
 							}
 						} else if (depth == 2 && "release".equals(xml.getLocalName())) {
-							return new Album(artist, values.get("album_title"), values.get("album_released"), values.get("album_type"), values.get("album_mbid"), tracks);
+							Album album = new Album(artist, values.get("album_title"), values.get("album_released"), values.get("album_type"), values.get("album_mbid"), tracks);
+							LOG.info("Album loaded: ", album);
+							return album;
 						}
 						--depth;
 						break;
@@ -155,6 +158,7 @@ public final class MusicBrainz {
 		} catch (XMLStreamException e) {
 			LOG.warning(e);
 		}
+		LOG.notice("Unable to load album with MBID \"", mbid, "\"");
 		return null;
 	}
 
@@ -165,6 +169,7 @@ public final class MusicBrainz {
 	 * @return a list of albums containing matching tracks
 	 */
 	public static synchronized List<Album> searchTrack(Metafile metafile) {
+		LOG.info("Searching MusicBrainz for track matching file: ", metafile);
 		/* create search query */
 		int lastSlash = metafile.filename().lastIndexOf(File.separatorChar);
 		String lastDirectory = escape(metafile.filename().substring(metafile.filename().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash));
@@ -286,7 +291,7 @@ public final class MusicBrainz {
 		} catch (XMLStreamException e) {
 			LOG.warning(e);
 		}
-
+		LOG.info("Returning list of matching albums: ", trackAlbums);
 		return trackAlbums;
 	}
 
