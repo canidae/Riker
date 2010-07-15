@@ -105,28 +105,37 @@ public class RikerGui extends JFrame implements RikerUi {
 	private void setGroupInTree(Group group) {
 		DefaultTreeModel model = (DefaultTreeModel) matchTree.getModel();
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-		Enumeration groupNodes = root.children();
-		while (groupNodes.hasMoreElements()) {
-			DefaultMutableTreeNode groupNode = (DefaultMutableTreeNode) groupNodes.nextElement();
-			if (group.name().equals(groupNode.getUserObject().toString())) {
+		DefaultMutableTreeNode groupNode = null;
+		for (int groupIndex = 0; groupIndex < root.getChildCount(); ++groupIndex) {
+			groupNode = (DefaultMutableTreeNode) root.getChildAt(groupIndex);
+			if (group.name().compareTo(groupNode.getUserObject().toString()) < 0) {
+				/* group doesn't exist in tree, add it */
+				groupNode = new DefaultMutableTreeNode(group);
+				model.insertNodeInto(groupNode, root, groupIndex);
+				break;
+			} else if (group.name().equals(groupNode.getUserObject().toString())) {
 				/* update this group */
 				groupNode.removeAllChildren();
-				for (Metafile metafile : group.files()) {
-					Track track = metafile.track();
-					if (track != null) {
-					} else {
-					}
-				}
-				return;
+				break;
 			}
 		}
-	}
-
-	/**
-	 * Add or update a metafile in the JTree.
-	 * @param metafile metafile to add/update in the tree
-	 */
-	private void setMetafileInTree(Metafile metafile) {
+		if (groupNode == null) {
+			groupNode = new DefaultMutableTreeNode(group);
+			model.insertNodeInto(groupNode, root, root.getChildCount());
+		}
+		for (Metafile metafile : group.files()) {
+			Track track = metafile.track();
+			if (track != null) {
+			} else {
+				DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(metafile);
+				for (int entryIndex = 0; entryIndex < groupNode.getChildCount(); ++entryIndex) {
+					if (!(((DefaultMutableTreeNode) groupNode.getChildAt(entryIndex)).getUserObject() instanceof Metafile)) {
+						continue;
+					}
+				}
+			}
+		}
+		return;
 	}
 
 	/** This method is called from within the constructor to
