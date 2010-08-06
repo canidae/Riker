@@ -81,7 +81,7 @@ public final class Riker {
 		rg.setVisible(true);
 		Riker.rikerUi = rg;
 		FileHandler.start();
-		FileHandler.load("/home/canidae/Music");
+		FileHandler.load("/home/canidae/Music/unsorted");
 	}
 
 	/**
