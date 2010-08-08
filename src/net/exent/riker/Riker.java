@@ -81,11 +81,12 @@ public final class Riker {
 		rg.setVisible(true);
 		Riker.rikerUi = rg;
 		FileHandler.start();
-		FileHandler.load("/home/canidae/Music/unsorted");
+		FileHandler.load("/home/canidae/Music/tmp_un");
 	}
 
 	/**
 	 * Called by Matchers when they're done matching files.
+	 * @param matcher the Matcher that called this method
 	 */
 	public static synchronized void matcherFinished(Matcher matcher) {
 		LOG.info("Matcher finished: " + matcher);

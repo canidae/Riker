@@ -71,9 +71,8 @@ public class Album {
 		this.type = type;
 		this.mbid = mbid;
 		this.tracks = tracks;
-		for (Track track : tracks) {
+		for (Track track : tracks)
 			track.album(this);
-		}
 	}
 
 	/**
@@ -88,9 +87,8 @@ public class Album {
 		this.type = type;
 		this.mbid = mbid;
 		this.tracks = tracks;
-		for (Track track : tracks) {
+		for (Track track : tracks)
 			track.album(this);
-		}
 	}
 
 	/**
@@ -139,5 +137,10 @@ public class Album {
 	 */
 	public List<Track> tracks() {
 		return tracks;
+	}
+
+	@Override
+	public String toString() {
+		return (artist == null ? "<Unknown>" : artist.name()) + " - " + title + " (" + (tracks == null ? "0" : tracks.size()) + " tracks, released: " + released + ", MBID: " + mbid + ")";
 	}
 }

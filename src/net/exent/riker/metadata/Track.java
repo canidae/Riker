@@ -125,4 +125,9 @@ public class Track {
 	public int duration() {
 		return duration;
 	}
+
+	@Override
+	public String toString() {
+		return tracknumber + " - " + artist.name() + " - " + title + " (" + duration + "ms, MBID: " + mbid + ")";
+	}
 }

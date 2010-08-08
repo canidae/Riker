@@ -76,7 +76,7 @@ public class Metafile extends AudioFile {
 		if (groupName == null) {
 			groupName = "<none>";
 		}
-		return groupName + " (" + getAudioHeader().getFormat() + ", " + getAudioHeader().getSampleRate() + ", " + getAudioHeader().getChannels() + ")";
+		return groupName + " - " + getAudioHeader().getFormat() + " - " + getAudioHeader().getSampleRate() + " - " + getAudioHeader().getChannels();
 	}
 
 	/**

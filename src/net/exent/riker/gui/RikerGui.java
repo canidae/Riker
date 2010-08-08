@@ -51,6 +51,7 @@ public class RikerGui extends JFrame implements RikerUi {
 	 */
 	public RikerGui() {
 		initComponents();
+		matchTree.setCellRenderer(new MatchTreeCellRenderer());
 	}
 
 	@Override

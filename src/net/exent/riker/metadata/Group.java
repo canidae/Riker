@@ -92,6 +92,6 @@ public class Group {
 
 	@Override
 	public String toString() {
-		return name;
+		return name + " (" + files.size() + " files)";
 	}
 }
