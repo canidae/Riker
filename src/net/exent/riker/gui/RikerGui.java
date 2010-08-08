@@ -168,7 +168,7 @@ public class RikerGui extends JFrame implements RikerUi {
 				Enumeration entryNodes = groupNode.children();
 				while (entryNodes.hasMoreElements()) {
 					DefaultMutableTreeNode tmpNode = (DefaultMutableTreeNode) entryNodes.nextElement();
-					if (metafile.toString().compareTo(tmpNode.getUserObject().toString()) < 0)
+					if (tmpNode.getUserObject() instanceof Metafile && metafile.toString().compareTo(tmpNode.getUserObject().toString()) < 0)
 						break;
 					++fileNodeIndex;
 				}

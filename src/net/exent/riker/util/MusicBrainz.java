@@ -131,13 +131,14 @@ public final class MusicBrainz {
 						if (depth == 3 && "artist".equals(xml.getLocalName())) {
 							artist = new Artist(values.get("artist_name"), values.get("artist_sortname"), values.get("artist_mbid"));
 						} else if (depth == 4 && "track".equals(xml.getLocalName())) {
+							int trackduration = 0;
 							try {
-								int trackduration = Integer.parseInt(values.get("track_duration"));
-								Track tr = new Track(artist, values.get("track_title"), values.get("track_mbid"), tracks.size() + 1, trackduration);
-								tracks.add(tr);
+								trackduration = Integer.parseInt(values.get("track_duration"));
 							} catch (NumberFormatException e) {
-								LOG.warning(e);
+								LOG.debug(e, "Could not get track duration from XML, probably not known, so setting it to 0");
 							}
+							Track tr = new Track(artist, values.get("track_title"), values.get("track_mbid"), tracks.size() + 1, trackduration);
+							tracks.add(tr);
 						} else if (depth == 2 && "release".equals(xml.getLocalName())) {
 							Album album = new Album(artist, values.get("album_title"), values.get("album_released"), values.get("album_type"), values.get("album_mbid"), tracks);
 							LOG.info("Album loaded: ", album);
