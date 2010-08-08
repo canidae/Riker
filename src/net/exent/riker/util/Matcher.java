@@ -164,32 +164,38 @@ public class Matcher implements Runnable {
 		/* update metafiles with best matched track */
 		Album bestAlbum = null;
 		double bestAlbumScore = 0.0;
-		for (Map.Entry<Album, Map<Track, Map<Metafile, Double>>> album : comparison.entrySet()) {
+		for (Map.Entry<Album, Map<Track, Map<Metafile, Double>>> albumEntry : comparison.entrySet()) {
 			double albumScore = 0.0;
-			for (Map.Entry<Track, Map<Metafile, Double>> track : album.getValue().entrySet()) {
+			Map<Metafile, Double> metafileScores = new HashMap<Metafile, Double>();
+			for (Map.Entry<Track, Map<Metafile, Double>> trackEntry : albumEntry.getValue().entrySet()) {
 				double bestMetafileScore = 0.0;
-				for (Map.Entry<Metafile, Double> metafile : track.getValue().entrySet()) {
-					if (metafile.getValue() > bestMetafileScore)
-						bestMetafileScore = metafile.getValue();
+				for (Map.Entry<Metafile, Double> metafileEntry : trackEntry.getValue().entrySet()) {
+					Double metafileScore = metafileScores.get(metafileEntry.getKey());
+					if (metafileScore == null || metafileScore > bestMetafileScore) {
+						bestMetafileScore = metafileEntry.getValue();
+						metafileScores.put(metafileEntry.getKey(), bestMetafileScore);
+					}
 				}
 				albumScore += bestMetafileScore;
 			}
+			albumScore *= (double) metafileScores.size() / (double) albumEntry.getValue().size();
+			LOG.notice("Album score for \"", albumEntry.getKey(), "\": ", albumScore, " (", metafileScores.size(), " of ", albumEntry.getValue().size(), " tracks matched)");
 			if (albumScore > bestAlbumScore) {
-				bestAlbum = album.getKey();
+				bestAlbum = albumEntry.getKey();
 				bestAlbumScore = albumScore;
 			}
 		}
 		if (bestAlbum != null) {
-			for (Map.Entry<Track, Map<Metafile, Double>> track : comparison.get(bestAlbum).entrySet()) {
+			for (Map.Entry<Track, Map<Metafile, Double>> trackEntry : comparison.get(bestAlbum).entrySet()) {
 				Metafile bestMetafile = null;
 				double bestMetafileScore = 0.0;
-				for (Map.Entry<Metafile, Double> metafile : track.getValue().entrySet()) {
-					if (metafile.getValue() > bestMetafileScore) {
-						bestMetafile = metafile.getKey();
-						bestMetafileScore = metafile.getValue();
+				for (Map.Entry<Metafile, Double> metafileEntry : trackEntry.getValue().entrySet()) {
+					if (metafileEntry.getValue() > bestMetafileScore) {
+						bestMetafile = metafileEntry.getKey();
+						bestMetafileScore = metafileEntry.getValue();
 					}
 				}
-				bestMetafile.track(track.getKey(), bestMetafileScore);
+				bestMetafile.track(trackEntry.getKey(), bestMetafileScore);
 			}
 		}
 		active = false;
@@ -212,15 +218,17 @@ public class Matcher implements Runnable {
 	 * @param album the album to compare the metafiles with
 	 */
 	private void compareAllMetafilesWithAlbum(Album album) {
-		for (Track track : album.tracks()) {
-			for (Metafile file : group.files()) {
+		for (Metafile file : group.files()) {
+			for (Track track : album.tracks()) {
 				double score = compareMetafileWithTrack(file, track);
-				/* if score is bad, don't waste memory keeping the comparison */
-				if (score < 0.3)
+				/* if score is bad, don't waste memory or cpu by keeping the comparison */
+				if (score < 0.2)
 					continue;
 				/* if score is good enough, remove metafile from queue */
-				if (queue != null && score > 0.5)
+				if (queue != null && score > 0.75) {
+					LOG.info("Removing ", file, " from queue, match score: ", score);
 					queue.remove(file);
+				}
 				/* save comparison */
 				Map<Track, Map<Metafile, Double>> albumComparison = comparison.get(album);
 				if (albumComparison == null) {
@@ -280,6 +288,7 @@ public class Matcher implements Runnable {
 		int durationDiff = Math.abs(file.getAudioHeader().getTrackLength() - track.duration());
 		if (durationDiff < 15000)
 			bestScore += 1.0 - (double) durationDiff / 15000.0;
+		LOG.notice("Comparing with \"", track, "\", values: ", values, " | score: ", bestScore / 5.0);
 		return bestScore / 5.0;
 	}
 
@@ -296,6 +305,7 @@ public class Matcher implements Runnable {
 			if (album != null)
 				albumCache.put(album.mbid(), album);
 		}
+		LOG.notice("Loaded album: ", album);
 		return album;
 	}
 }

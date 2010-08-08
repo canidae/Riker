@@ -193,7 +193,7 @@ public class Metafile extends AudioFile {
 
 	@Override
 	public String toString() {
-		return filename();
+		return (track != null ? "(" + (int) (matchScore * 100.0) +"%) " : "") + filename();
 	}
 
 	/**

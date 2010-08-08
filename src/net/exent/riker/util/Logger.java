@@ -45,9 +45,11 @@ public class Logger {
 	static {
 		Handler consoleHandler = new ConsoleHandler();
 		consoleHandler.setFormatter(new LoggerFormatter());
+		consoleHandler.setLevel(LoggerLevel.NOTICE);
 		for (Handler h : java.util.logging.Logger.getLogger("").getHandlers())
 			java.util.logging.Logger.getLogger("").removeHandler(h);
 		java.util.logging.Logger.getLogger("").addHandler(consoleHandler);
+		java.util.logging.Logger.getLogger("").setLevel(Level.ALL);
 	}
 
 	/**

@@ -95,6 +95,7 @@ public class RikerGui extends JFrame implements RikerUi {
 			DefaultMutableTreeNode tmpNode = (DefaultMutableTreeNode) groupNodes.nextElement();
 			if (group.equals(tmpNode.getUserObject())) {
 				/* update this group */
+				LOG.notice("Updating group \"", tmpNode, "\" to \"", group, "\"");
 				groupNode = tmpNode;
 				groupNode.removeAllChildren();
 				break;
@@ -104,6 +105,7 @@ public class RikerGui extends JFrame implements RikerUi {
 			++groupNodeIndex;
 		}
 		if (groupNode == null) {
+			LOG.notice("Creating new group \"", group, "\"");
 			groupNode = new DefaultMutableTreeNode(group);
 			model.insertNodeInto(groupNode, root, groupNodeIndex);
 		}
@@ -175,7 +177,7 @@ public class RikerGui extends JFrame implements RikerUi {
 				model.insertNodeInto(fileNode, groupNode, fileNodeIndex);
 			}
 		}
-		return;
+		model.nodeStructureChanged(groupNode);
 	}
 
 	/** This method is called from within the constructor to
