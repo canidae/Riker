@@ -69,9 +69,8 @@ public class Group {
 	 * @param file file to be added to group
 	 */
 	public void addFile(Metafile file) {
-		if (!files.contains(file)) {
+		if (!files.contains(file))
 			files.add(file);
-		}
 	}
 
 	/**

@@ -90,11 +90,10 @@ public final class Riker {
 	 */
 	public static synchronized void matcherFinished(Matcher matcher) {
 		LOG.info("Matcher finished: " + matcher);
-		if (matcherQueue.isEmpty()) {
+		if (matcherQueue.isEmpty())
 			rikerUi.allFilesMatched();
-		} else {
+		else
 			matcherQueue.remove(0).start();
-		}
 		rikerUi.groupMatched(matcher.group());
 	}
 

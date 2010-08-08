@@ -45,9 +45,8 @@ public class Logger {
 	static {
 		Handler consoleHandler = new ConsoleHandler();
 		consoleHandler.setFormatter(new LoggerFormatter());
-		for (Handler h : java.util.logging.Logger.getLogger("").getHandlers()) {
+		for (Handler h : java.util.logging.Logger.getLogger("").getHandlers())
 			java.util.logging.Logger.getLogger("").removeHandler(h);
-		}
 		java.util.logging.Logger.getLogger("").addHandler(consoleHandler);
 	}
 
@@ -168,9 +167,8 @@ public class Logger {
 	 * @param data data to be logged.
 	 */
 	private void log(Level level, Throwable t, Object... data) {
-		if (!logger.isLoggable(level)) {
+		if (!logger.isLoggable(level))
 			return;
-		}
 		logger.log(level, unwrap(data), t);
 	}
 
@@ -181,9 +179,8 @@ public class Logger {
 	 */
 	private String unwrap(Object... data) {
 		StringBuilder sb = new StringBuilder(256);
-		for (Object d : data) {
+		for (Object d : data)
 			sb.append(d);
-		}
 		return sb.toString();
 	}
 
@@ -247,9 +244,8 @@ public class Logger {
 			if (record.getThrown() != null) {
 				StringBuilder sb = new StringBuilder(1024);
 				sb.append(record.getThrown()).append(NEWLINE);
-				for (StackTraceElement ste : record.getThrown().getStackTrace()) {
+				for (StackTraceElement ste : record.getThrown().getStackTrace())
 					sb.append("        at ").append(ste).append(NEWLINE);
-				}
 				return String.format(WITH_THROWABLE, System.currentTimeMillis(), record.getLevel().getName(), record.getThreadID(), record.getLoggerName(), record.getMessage(), sb);
 			} else {
 				return String.format(WITHOUT_THROWABLE, System.currentTimeMillis(), record.getLevel().getName(), record.getThreadID(), record.getLoggerName(), record.getMessage());

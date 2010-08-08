@@ -126,9 +126,8 @@ public class Matcher implements Runnable {
 				/* if we got album mbid, look that up first */
 				String albumMbid = file.getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
 				Album album = null;
-				if (albumMbid != null) {
+				if (albumMbid != null)
 					album = loadAlbum(albumMbid);
-				}
 				if (album != null) {
 					compareAllMetafilesWithAlbum(album);
 				} else {
@@ -158,9 +157,8 @@ public class Matcher implements Runnable {
 			/* only match files with given albums */
 			for (String albumMbid : albumMbids) {
 				Album album = loadAlbum(albumMbid);
-				if (album != null) {
+				if (album != null)
 					compareAllMetafilesWithAlbum(album);
-				}
 			}
 		}
 		/* update metafiles with best matched track */
@@ -171,9 +169,8 @@ public class Matcher implements Runnable {
 			for (Map.Entry<Track, Map<Metafile, Double>> track : album.getValue().entrySet()) {
 				double bestMetafileScore = 0.0;
 				for (Map.Entry<Metafile, Double> metafile : track.getValue().entrySet()) {
-					if (metafile.getValue() > bestMetafileScore) {
+					if (metafile.getValue() > bestMetafileScore)
 						bestMetafileScore = metafile.getValue();
-					}
 				}
 				albumScore += bestMetafileScore;
 			}
@@ -219,13 +216,11 @@ public class Matcher implements Runnable {
 			for (Metafile file : group.files()) {
 				double score = compareMetafileWithTrack(file, track);
 				/* if score is bad, don't waste memory keeping the comparison */
-				if (score < 0.3) {
+				if (score < 0.3)
 					continue;
-				}
 				/* if score is good enough, remove metafile from queue */
-				if (queue != null && score > 0.5) {
+				if (queue != null && score > 0.5)
 					queue.remove(file);
-				}
 				/* save comparison */
 				Map<Track, Map<Metafile, Double>> albumComparison = comparison.get(album);
 				if (albumComparison == null) {
@@ -250,9 +245,8 @@ public class Matcher implements Runnable {
 	 */
 	private double compareMetafileWithTrack(Metafile file, Track track) {
 		List<String> values = file.stringValues();
-		if (values.size() <= 0) {
+		if (values.size() <= 0)
 			return 0.0;
-		}
 		/* calculate Levenshtein similarity of all file metadata with track metadata */
 		double[][] scores = new double[4][values.size()];
 		int index = 0;
@@ -267,30 +261,25 @@ public class Matcher implements Runnable {
 		double bestScore = 0.0;
 		for (int albumIndex = 0; albumIndex < values.size(); ++albumIndex) {
 			for (int artistIndex = 0; artistIndex < values.size(); ++artistIndex) {
-				if (artistIndex == albumIndex) {
+				if (artistIndex == albumIndex)
 					continue;
-				}
 				for (int titleIndex = 0; titleIndex < values.size(); ++titleIndex) {
-					if (titleIndex == artistIndex || titleIndex == albumIndex) {
+					if (titleIndex == artistIndex || titleIndex == albumIndex)
 						continue;
-					}
 					for (int tracknumIndex = 0; tracknumIndex < values.size(); ++tracknumIndex) {
-						if (tracknumIndex == titleIndex || tracknumIndex == artistIndex || tracknumIndex == albumIndex) {
+						if (tracknumIndex == titleIndex || tracknumIndex == artistIndex || tracknumIndex == albumIndex)
 							continue;
-						}
 						double score = scores[0][albumIndex] + scores[1][artistIndex] + scores[2][titleIndex] + scores[3][tracknumIndex];
-						if (score > bestScore) {
+						if (score > bestScore)
 							bestScore = score;
-						}
 					}
 				}
 			}
 		}
 		/* add score from duration */
 		int durationDiff = Math.abs(file.getAudioHeader().getTrackLength() - track.duration());
-		if (durationDiff < 15000) {
+		if (durationDiff < 15000)
 			bestScore += 1.0 - (double) durationDiff / 15000.0;
-		}
 		return bestScore / 5.0;
 	}
 
@@ -304,9 +293,8 @@ public class Matcher implements Runnable {
 		if (album == null) {
 			album = MusicBrainz.loadAlbum(mbid);
 			/* add album to cache */
-			if (album != null) {
+			if (album != null)
 				albumCache.put(album.mbid(), album);
-			}
 		}
 		return album;
 	}

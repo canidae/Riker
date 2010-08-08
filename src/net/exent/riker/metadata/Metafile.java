@@ -66,16 +66,14 @@ public class Metafile extends AudioFile {
 	 */
 	public String createGroupName() {
 		String groupName = getFirst(FieldKey.MUSICBRAINZ_RELEASEID);
-		if (groupName == null) {
+		if (groupName == null)
 			groupName = getFirst(FieldKey.ALBUM);
-		}
 		if (groupName == null) {
 			String path = getFile().getAbsolutePath();
 			groupName = path.substring(0, path.lastIndexOf(File.separatorChar));
 		}
-		if (groupName == null) {
+		if (groupName == null)
 			groupName = "<none>";
-		}
 		return groupName + " - " + getAudioHeader().getFormat() + " - " + getAudioHeader().getSampleRate() + " - " + getAudioHeader().getChannels();
 	}
 
@@ -86,25 +84,20 @@ public class Metafile extends AudioFile {
 		stringValues.clear();
 		/* add interesting metadata to list of string values */
 		String tmp = getFirst(FieldKey.ALBUM);
-		if (tmp != null) {
+		if (tmp != null)
 			stringValues.add(tmp);
-		}
 		tmp = getFirst(FieldKey.ALBUM_ARTIST);
-		if (tmp != null) {
+		if (tmp != null)
 			stringValues.add(tmp);
-		}
 		tmp = getFirst(FieldKey.ARTIST);
-		if (tmp != null) {
+		if (tmp != null)
 			stringValues.add(tmp);
-		}
 		tmp = getFirst(FieldKey.TITLE);
-		if (tmp != null) {
+		if (tmp != null)
 			stringValues.add(tmp);
-		}
 		tmp = getFirst(FieldKey.TRACK);
-		if (tmp != null) {
+		if (tmp != null)
 			stringValues.add(tmp);
-		}
 		/* add interesting strings from last directory name to list of string values unless a similar value already exist in list */
 		int lastSlash = filename().lastIndexOf(File.separatorChar);
 		String directory = filename().substring(filename().lastIndexOf(File.separatorChar, lastSlash - 1) + 1, lastSlash).replace('_', ' ');
@@ -117,9 +110,8 @@ public class Metafile extends AudioFile {
 					break;
 				}
 			}
-			if (!valueExists) {
+			if (!valueExists)
 				stringValues.add(value);
-			}
 		}
 		/* add interesting strings from base filename to list of string values unless a similar value already exist in list */
 		String basename = filename().substring(lastSlash + 1, filename().lastIndexOf(".")).replace('_', ' ');
@@ -133,9 +125,8 @@ public class Metafile extends AudioFile {
 						break;
 					}
 				}
-				if (!valueExists) {
+				if (!valueExists)
 					stringValues.add(value);
-				}
 			}
 		}
 	}
@@ -145,9 +136,8 @@ public class Metafile extends AudioFile {
 	 * @return a list of semi-unique strings found in metadata and filename
 	 */
 	public List<String> stringValues() {
-		if (stringValues.size() <= 0) {
+		if (stringValues.size() <= 0)
 			updateStringValues();
-		}
 		return stringValues;
 	}
 
@@ -215,13 +205,11 @@ public class Metafile extends AudioFile {
 	 */
 	public String getFirst(FieldKey key) {
 		String value = getTag().getFirst(key);
-		if (value == null) {
+		if (value == null)
 			return value;
-		}
 		value = value.trim();
-		if ("".equals(value)) {
+		if ("".equals(value))
 			return null;
-		}
 		return value;
 	}
 }

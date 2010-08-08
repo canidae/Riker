@@ -117,9 +117,8 @@ public final class FileHandler implements Runnable {
 				File file = new File(path);
 				if (file.isDirectory()) {
 					/* add all files/directories in this directory to the loadQueue */
-					for (File f : file.listFiles()) {
+					for (File f : file.listFiles())
 						loadQueue.add(f.getAbsolutePath());
-					}
 				} else if (file.isFile()) {
 					/* try to read the file as an Metafile */
 					try {
@@ -134,9 +133,8 @@ public final class FileHandler implements Runnable {
 					LOG.notice("Unable to read file/directory: ", path);
 				}
 			}
-			if (filesLoaded) {
+			if (filesLoaded)
 				Riker.allFilesLoaded();
-			}
 			boolean filesSaved = false;
 			while (active && saveQueue.size() > 0) {
 				Metafile metafile = saveQueue.remove(0);
@@ -150,12 +148,11 @@ public final class FileHandler implements Runnable {
 					/* TODO: Riker.fileSaveFailed(audioFile, e); */
 				}
 			}
-			if (filesSaved) {
-				/* TODO: Riker.filesSaved(); */
-			}
-			if (active && loadQueue.size() <= 0 && saveQueue.size() <= 0) {
+			/* TODO: Riker.filesSaved(); */
+			// if (filesSaved)
+		
+			if (active && loadQueue.size() <= 0 && saveQueue.size() <= 0)
 				sleep();
-			}
 		}
 	}
 

@@ -64,11 +64,10 @@ public class MatchTreeCellRenderer implements TreeCellRenderer {
 		}
 		JLabel label = new JLabel(node.toString(), new ImageIcon(getClass().getResource("/net/exent/riker/gui/icons/" + icon)), JLabel.LEFT);
 		label.setOpaque(true);
-		if (selected) {
+		if (selected)
 			label.setBackground(new Color(200, 200, 255));
-		} else {
+		else
 			label.setBackground(new Color(255, 255, 255));
-		}
 		return label;
 	}
 }
