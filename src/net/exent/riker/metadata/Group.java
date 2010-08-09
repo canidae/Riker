@@ -30,7 +30,6 @@ import java.util.List;
  * A group is a collection of files that we believe come from the same album.
  */
 public class Group {
-
 	/**
 	 * Name of current group.
 	 */
@@ -39,6 +38,10 @@ public class Group {
 	 * List of files in group.
 	 */
 	private List<Metafile> files = new ArrayList<Metafile>();
+	/**
+	 * TODO: List of albums loaded for this group, but wasn't used (ie. potentially matching albums).
+	 */
+	private List<Album> albums = new ArrayList<Album>();
 
 	/**
 	 * Default constructor.

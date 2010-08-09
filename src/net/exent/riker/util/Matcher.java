@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.exent.riker.Riker;
 import net.exent.riker.metadata.Album;
 import net.exent.riker.metadata.Group;
@@ -164,8 +165,10 @@ public class Matcher implements Runnable {
 		/* update metafiles with best matched track */
 		Album bestAlbum = null;
 		double bestAlbumScore = 0.0;
+		Map<Album, Double> albumScores = new HashMap<Album, Double>();
 		for (Map.Entry<Album, Map<Track, Map<Metafile, Double>>> albumEntry : comparison.entrySet()) {
 			double albumScore = 0.0;
+			Map<Track, Set<Metafile>> trackAndMetafileTried = new HashMap<Track, Set<Metafile>>();
 			Map<Metafile, Double> metafileScores = new HashMap<Metafile, Double>();
 			for (Map.Entry<Track, Map<Metafile, Double>> trackEntry : albumEntry.getValue().entrySet()) {
 				double bestMetafileScore = 0.0;
@@ -210,6 +213,63 @@ public class Matcher implements Runnable {
 		if (!active) {
 			active = true;
 			new Thread(this).start();
+		}
+	}
+
+	private void calculateBestGroupAlbums() {
+		Map<Map<Track, Metafile>, Double> bestGroupAlbums = new HashMap<Map<Track, Metafile>, Double>();
+		for (Map.Entry<Album, Map<Track, Map<Metafile, Double>>> albumEntry : comparison.entrySet()) {
+			Map<Track, Map<Metafile, Double>> albumComparisonCopy = new HashMap<Track, Map<Metafile, Double>>();
+			for (Map.Entry<Track, Map<Metafile, Double>> trackEntry : albumEntry.getValue().entrySet()) {
+				Map<Metafile, Double> trackComparisonCopy = new HashMap<Metafile, Double>();
+				trackComparisonCopy.putAll(trackEntry.getValue());
+				albumComparisonCopy.put(trackEntry.getKey(), trackComparisonCopy);
+			}
+			List<Map<Track, Metafile>> result = new ArrayList<Map<Track, Metafile>>();
+			result.add(new HashMap<Track, Metafile>());
+			getTrackAndMetafileCombinations(albumComparisonCopy, result);
+			Map<Track, Metafile> bestResult = null;
+			double bestResultScore = 0.0;
+			for (Map<Track, Metafile> r : result) {
+				double score = 0.0;
+				for (Map.Entry<Track, Metafile> resultEntry : r.entrySet())
+					score += albumEntry.getValue().get(resultEntry.getKey()).get(resultEntry.getValue());
+				score *= (double) r.size() / (double) albumEntry.getKey().tracks().size();
+				if (score > bestResultScore) {
+					bestResultScore = score;
+					bestResult = r;
+				}
+			}
+			if (bestResult != null)
+				bestGroupAlbums.put(bestResult, bestResultScore);
+		}
+	}
+
+	/**
+	 * Get the possible Track and Metafile combinations from the given copy of comparisons of a given album.
+	 * @param albumComparisonCopy copy of comparisons for an album
+	 * @param result a list of possible combinations
+	 */
+	private void getTrackAndMetafileCombinations(Map<Track, Map<Metafile, Double>> albumComparisonCopy, List<Map<Track, Metafile>> result) {
+		boolean recursed = false;
+		for (Map.Entry<Track, Map<Metafile, Double>> trackEntry : albumComparisonCopy.entrySet()) {
+			if (result.get(result.size() - 1).containsKey(trackEntry.getKey()))
+				continue;
+			for (Map.Entry<Metafile, Double> metafileEntry : trackEntry.getValue().entrySet()) {
+				if (result.get(result.size() - 1).containsValue(metafileEntry.getKey()))
+					continue;
+				/* add track & metafile to map and recurse */
+				result.get(result.size() - 1).put(trackEntry.getKey(), metafileEntry.getKey());
+				getTrackAndMetafileCombinations(albumComparisonCopy, result);
+				result.get(result.size() - 1).remove(trackEntry.getKey());
+				recursed = true;
+			}
+		}
+		if (!recursed) {
+			/* all possible combinations used, add map to result list */
+			Map<Track, Metafile> r = new HashMap<Track, Metafile>();
+			r.putAll(result.get(result.size() - 1));
+			result.add(r);
 		}
 	}
 
